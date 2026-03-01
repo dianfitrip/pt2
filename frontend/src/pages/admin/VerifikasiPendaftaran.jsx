@@ -3,7 +3,8 @@ import Swal from 'sweetalert2';
 import api from "../../services/api"; 
 import { 
   Search, Eye, CheckCircle, XCircle, 
-  User, MapPin, Calendar, School, Loader2, FileText 
+  User, MapPin, Phone, Mail, School, 
+  Loader2, Clock // Menambahkan Clock
 } from 'lucide-react';
 import './adminstyles/VerifikasiPendaftaran.css';
 
@@ -12,6 +13,7 @@ const VerifikasiPendaftaran = () => {
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   
   // Modal State
@@ -19,35 +21,24 @@ const VerifikasiPendaftaran = () => {
   const [selectedItem, setSelectedItem] = useState(null);
 
   // --- 1. FETCH DATA ---
-  // Sesuai Controller: exports.getAll
   const fetchData = async () => {
     setLoading(true);
     try {
       // Endpoint: GET /admin/pendaftaran
       const response = await api.get('/admin/pendaftaran');
       
-      // Controller response: response.success(res, "List pendaftaran asesi", data);
-      // Biasanya formatnya: { status: true, message: "...", data: [...] }
+      // Ambil data dari response backend
       const resultData = response.data.data || []; 
       
       setData(resultData);
       setFilteredData(resultData);
     } catch (error) {
       console.error("Error fetching data:", error);
-      
-      // Deteksi Error 500 (Masalah Database)
-      if (error.response && error.response.status === 500) {
+      if (error.response?.status !== 500) {
         Swal.fire({
           icon: 'error',
-          title: 'Server Error (500)',
-          text: 'Terjadi kesalahan di server. Kemungkinan tabel database belum ada. Cek terminal backend Anda.',
-          footer: 'Pastikan file SQL sudah di-import ke phpMyAdmin'
-        });
-      } else {
-        Swal.fire({
-          icon: 'error',
-          title: 'Gagal',
-          text: 'Gagal mengambil data pendaftaran.'
+          title: 'Gagal Memuat Data',
+          text: error.response?.data?.message || 'Terjadi kesalahan koneksi.',
         });
       }
     } finally {
@@ -59,120 +50,81 @@ const VerifikasiPendaftaran = () => {
     fetchData();
   }, []);
 
-  // --- 2. SEARCH / FILTER ---
+  // --- 2. SEARCH & FILTER ---
   useEffect(() => {
-    if (!searchTerm) {
-      setFilteredData(data);
-    } else {
-      const lowerTerm = searchTerm.toLowerCase();
-      const filtered = data.filter(item => 
-        (item.nama_lengkap && item.nama_lengkap.toLowerCase().includes(lowerTerm)) ||
-        (item.nik && item.nik.includes(lowerTerm)) ||
-        (item.program_studi && item.program_studi.toLowerCase().includes(lowerTerm))
-      );
-      setFilteredData(filtered);
-    }
+    const lowerTerm = searchTerm.toLowerCase();
+    const filtered = data.filter(item => 
+      (item.nama_lengkap && item.nama_lengkap.toLowerCase().includes(lowerTerm)) ||
+      (item.email && item.email.toLowerCase().includes(lowerTerm)) ||
+      (item.nik && item.nik.includes(lowerTerm))
+    );
+    setFilteredData(filtered);
   }, [searchTerm, data]);
 
-  // --- 3. HANDLE ACTIONS (APPROVE / REJECT) ---
-
-  // Handle Approve (Verifikasi)
-  const handleApprove = async (id) => {
-    if (showModal) closeModal();
-
+  // --- 3. ACTIONS ---
+  
+  // Handle Verifikasi (Approve)
+  const handleApprove = async (id_pendaftaran) => {
     const result = await Swal.fire({
       title: 'Verifikasi Pendaftaran?',
-      text: "Sistem akan membuat akun user dan mengirim email ke asesi.",
+      text: "Sistem akan membuatkan akun user & profil asesi otomatis.",
       icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: '#10B981', 
-      cancelButtonColor: '#64748B',
+      confirmButtonColor: '#10B981',
+      cancelButtonColor: '#6B7280',
       confirmButtonText: 'Ya, Verifikasi',
       cancelButtonText: 'Batal'
     });
 
     if (result.isConfirmed) {
-      // Loading state saat proses backend berjalan (kirim email dll)
-      Swal.fire({
-        title: 'Memproses...',
-        text: 'Sedang membuat akun dan mengirim email notifikasi.',
-        allowOutsideClick: false,
-        didOpen: () => {
-          Swal.showLoading();
-        }
-      });
-
+      setActionLoading(true);
       try {
-        // PERUBAHAN PENTING:
-        // Controller: exports.approvePendaftaran (menggunakan parameter req.params.id)
-        // Route: router.post("/pendaftaran/:id/approve", ...)
-        // Method: POST
-        await api.post(`/admin/pendaftaran/${id}/approve`);
-
-        Swal.fire(
-          'Berhasil!',
-          'Pendaftaran diverifikasi. Akun telah dibuat dan email terkirim.',
-          'success'
-        );
-        fetchData(); // Refresh data tabel
+        await api.put(`/admin/pendaftaran/${id_pendaftaran}/approve`);
+        
+        Swal.fire('Berhasil!', 'Pendaftaran diverifikasi. Email notifikasi telah dikirim.', 'success');
+        setShowModal(false);
+        fetchData(); 
       } catch (error) {
-        console.error("Error approve:", error);
-        Swal.fire(
-          'Gagal!',
-          error.response?.data?.message || 'Terjadi kesalahan saat verifikasi.',
-          'error'
-        );
+        console.error("Approve error:", error);
+        Swal.fire('Gagal!', error.response?.data?.message || 'Gagal memverifikasi pendaftaran.', 'error');
+      } finally {
+        setActionLoading(false);
       }
     }
   };
 
-  // Handle Reject (Tolak)
-  const handleReject = async (id) => {
-    if (showModal) closeModal();
-
+  // Handle Tolak (Reject)
+  const handleReject = async (id_pendaftaran) => {
     const result = await Swal.fire({
       title: 'Tolak Pendaftaran?',
-      text: "Status akan diubah menjadi rejected dan notifikasi dikirim.",
+      text: "Pendaftar akan menerima email penolakan.",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#EF4444',
-      cancelButtonColor: '#64748B',
+      cancelButtonColor: '#6B7280',
       confirmButtonText: 'Ya, Tolak',
       cancelButtonText: 'Batal'
     });
 
     if (result.isConfirmed) {
-      Swal.fire({
-        title: 'Memproses...',
-        didOpen: () => Swal.showLoading()
-      });
-
+      setActionLoading(true);
       try {
-        // PERUBAHAN PENTING:
-        // Controller: exports.rejectPendaftaran (menggunakan parameter req.params.id)
-        // Route: router.post("/pendaftaran/:id/reject", ...)
-        // Method: POST
-        await api.post(`/admin/pendaftaran/${id}/reject`);
-
-        Swal.fire(
-          'Ditolak!',
-          'Pendaftaran telah ditolak.',
-          'success'
-        );
-        fetchData(); // Refresh data tabel
+        await api.put(`/admin/pendaftaran/${id_pendaftaran}/reject`);
+        
+        Swal.fire('Ditolak!', 'Pendaftaran telah ditolak.', 'success');
+        setShowModal(false);
+        fetchData();
       } catch (error) {
-        console.error("Error reject:", error);
-        Swal.fire(
-          'Gagal!',
-          error.response?.data?.message || 'Terjadi kesalahan.',
-          'error'
-        );
+        console.error("Reject error:", error);
+        Swal.fire('Gagal!', error.response?.data?.message || 'Gagal menolak pendaftaran.', 'error');
+      } finally {
+        setActionLoading(false);
       }
     }
   };
 
-  // --- 4. MODAL HELPERS ---
-  const handleOpenModal = (item) => {
+  // --- 4. MODAL & UI HELPERS ---
+  const openDetailModal = (item) => {
     setSelectedItem(item);
     setShowModal(true);
   };
@@ -182,235 +134,194 @@ const VerifikasiPendaftaran = () => {
     setSelectedItem(null);
   };
 
-  // Helper Format Date
-  const formatDate = (dateString) => {
-    if (!dateString) return "-";
-    return new Date(dateString).toLocaleDateString('id-ID', {
-      day: 'numeric', month: 'long', year: 'numeric'
-    });
-  };
-
-  // Helper Badge Status
   const getStatusBadge = (status) => {
-    switch (status) {
+    switch(status) {
       case 'approved':
-        return <span className="status-badge success">Terverifikasi</span>;
+        return <span className="status-badge status-approved"><CheckCircle size={14}/> Verified</span>;
       case 'rejected':
-        return <span className="status-badge danger">Ditolak</span>;
+        return <span className="status-badge status-rejected"><XCircle size={14}/> Rejected</span>;
       default:
-        return <span className="status-badge warning">Menunggu</span>;
+        // PERUBAHAN DISINI: Menggunakan Clock (tanpa animasi)
+        return <span className="status-badge status-pending"><Clock size={14}/> Pending</span>;
     }
   };
 
+  // --- RENDER ---
   return (
     <div className="verifikasi-page">
-      {/* Header */}
       <div className="page-header">
-        <div>
-          <h1 className="page-title">Verifikasi Pendaftaran</h1>
-          <p className="page-subtitle">Kelola dan verifikasi pendaftaran asesi baru</p>
-        </div>
+        <h1 className="page-title">Verifikasi Pendaftaran</h1>
+        <p className="page-subtitle">Validasi data calon asesi baru</p>
       </div>
 
-      {/* Filter & Search */}
       <div className="filter-section-card">
         <div className="search-input-wrapper">
           <Search size={20} className="text-gray-400" />
           <input 
             type="text" 
-            placeholder="Cari nama, NIK, atau prodi..." 
+            placeholder="Cari Nama, NIK, atau Email..." 
+            className="search-input"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
 
-      {/* Table */}
-      <div className="table-container">
-        {loading ? (
-          <div className="flex justify-center items-center py-20">
-            <Loader2 className="animate-spin text-blue-600" size={40} />
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="custom-table">
-              <thead>
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200">
+              <tr>
+                <th className="px-6 py-4">No</th>
+                <th className="px-6 py-4">Identitas</th>
+                <th className="px-6 py-4">Program / Kompetensi</th>
+                <th className="px-6 py-4">Tanggal Daftar</th>
+                <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4 text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {loading ? (
                 <tr>
-                  <th>Tanggal Daftar</th>
-                  <th>NIK</th>
-                  <th>Nama Lengkap</th>
-                  <th>Program Studi</th>
-                  <th>Status</th>
-                  <th className="text-center">Aksi</th>
+                  <td colSpan="6" className="text-center py-10 text-slate-500">
+                    <div className="flex justify-center items-center gap-2">
+                      <Loader2 className="animate-spin" /> Memuat data...
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {filteredData.length > 0 ? (
-                  filteredData.map((item) => (
-                    <tr key={item.id_pendaftaran}>
-                      {/* Pastikan nama field sesuai Model Sequelize: tanggal_daftar, nik, dll */}
-                      <td>{formatDate(item.tanggal_daftar)}</td>
-                      <td>{item.nik}</td>
-                      <td>
-                        <div className="font-medium text-gray-900">{item.nama_lengkap}</div>
-                        <div className="text-xs text-gray-500">{item.email}</div>
-                      </td>
-                      <td>{item.program_studi}</td>
-                      <td>{getStatusBadge(item.status)}</td>
-                      <td>
-                        <div className="flex justify-center gap-2">
-                          <button 
-                            className="btn-action btn-view"
-                            onClick={() => handleOpenModal(item)}
-                            title="Lihat Detail"
-                          >
-                            <Eye size={18} />
-                          </button>
-                          
-                          {/* Tombol Aksi Langsung (Hanya muncul jika pending) */}
-                          {item.status === 'pending' && (
-                            <>
-                              <button 
-                                className="btn-action btn-check"
-                                onClick={() => handleApprove(item.id_pendaftaran)}
-                                title="Verifikasi"
-                              >
-                                <CheckCircle size={18} />
-                              </button>
-                              <button 
-                                className="btn-action btn-cross"
-                                onClick={() => handleReject(item.id_pendaftaran)}
-                                title="Tolak"
-                              >
-                                <XCircle size={18} />
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="6" className="text-center py-8 text-gray-500">
-                      Data tidak ditemukan
+              ) : filteredData.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="text-center py-10 text-slate-500">
+                    Tidak ada data pendaftaran.
+                  </td>
+                </tr>
+              ) : (
+                filteredData.map((item, index) => (
+                  <tr key={item.id_pendaftaran} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-6 py-4 text-slate-500">{index + 1}</td>
+                    <td className="px-6 py-4">
+                      <div className="font-bold text-slate-800">{item.nama_lengkap}</div>
+                      <div className="text-xs text-slate-500">NIK: {item.nik}</div>
+                      <div className="text-xs text-blue-600">{item.email}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-slate-700 font-medium">{item.program_studi}</div>
+                      <div className="text-xs text-slate-500">{item.kompetensi_keahlian || '-'}</div>
+                    </td>
+                    <td className="px-6 py-4 text-slate-500">
+                      {item.tanggal_daftar ? new Date(item.tanggal_daftar).toLocaleDateString('id-ID') : '-'}
+                    </td>
+                    <td className="px-6 py-4">
+                      {getStatusBadge(item.status)}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <button 
+                        onClick={() => openDetailModal(item)}
+                        className="btn-icon-blue"
+                        title="Lihat Detail"
+                      >
+                        <Eye size={18} />
+                      </button>
                     </td>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      {/* --- MODAL DETAIL --- */}
+      {/* MODAL DETAIL */}
       {showModal && selectedItem && (
-        <div className="modal-overlay">
-          <div className="modal-content-modern">
-            <div className="modal-header-modern">
-              <div>
-                <h3 className="text-xl font-bold text-gray-800">Detail Pendaftaran</h3>
-                <p className="text-sm text-gray-500">ID: #{selectedItem.id_pendaftaran}</p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl w-full max-w-3xl shadow-2xl overflow-hidden animate-slide-up">
+            
+            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 text-blue-600 rounded-lg">
+                  <User size={20} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-800">Detail Pendaftar</h3>
+                  <p className="text-xs text-slate-500">ID: #{selectedItem.id_pendaftaran}</p>
+                </div>
               </div>
-              <button className="close-btn" onClick={closeModal}>
+              <button onClick={closeModal} className="text-slate-400 hover:text-slate-600">
                 <XCircle size={24} />
               </button>
             </div>
 
-            <div className="modal-body-modern custom-scrollbar">
+            <div className="p-6 max-h-[70vh] overflow-y-auto">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Kolom Kiri: Info Pribadi */}
-                <div>
-                  <h4 className="group-title"><User size={16}/> Informasi Pribadi</h4>
-                  
-                  <div className="detail-row">
-                    <span className="label">Nama Lengkap</span>
-                    <span className="value">{selectedItem.nama_lengkap}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">NIK</span>
-                    <span className="value">{selectedItem.nik}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Email</span>
-                    <span className="value">{selectedItem.email}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">No. HP</span>
-                    <span className="value">{selectedItem.no_hp}</span>
+                
+                {/* Info Pribadi */}
+                <div className="space-y-4">
+                  <h4 className="section-title text-blue-600 flex items-center gap-2">
+                    <User size={16}/> Data Diri
+                  </h4>
+                  <div className="space-y-2">
+                    <DetailRow label="Nama Lengkap" value={selectedItem.nama_lengkap} />
+                    <DetailRow label="NIK" value={selectedItem.nik} />
+                    <DetailRow label="Email" value={selectedItem.email} />
+                    <DetailRow label="No HP" value={selectedItem.no_hp} />
                   </div>
                 </div>
 
-                {/* Kolom Kanan: Info Akademik & Wilayah */}
-                <div>
-                  <h4 className="group-title"><School size={16}/> Data Akademik</h4>
-                  
-                  <div className="detail-row">
-                    <span className="label">Program Studi</span>
-                    <span className="value">{selectedItem.program_studi}</span>
+                {/* Alamat & Wilayah */}
+                <div className="space-y-4">
+                  <h4 className="section-title text-blue-600 flex items-center gap-2">
+                    <MapPin size={16}/> Domisili & Wilayah
+                  </h4>
+                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 text-sm">
+                    <p className="font-medium text-slate-800 mb-1">{selectedItem.alamat_lengkap}</p>
+                    <p className="text-slate-500">
+                      {selectedItem.kelurahan}, {selectedItem.kecamatan}, {selectedItem.kota}, {selectedItem.provinsi}
+                    </p>
                   </div>
-                  <div className="detail-row">
-                    <span className="label">Kompetensi</span>
-                    <span className="value">{selectedItem.kompetensi_keahlian}</span>
-                  </div>
-                  <div className="detail-row mt-4 mb-2">
-                    <span className="label flex items-center gap-2">
-                      <FileText size={14}/> Wilayah RJI
-                    </span>
-                  </div>
-                  <div className="bg-gray-50 p-2 rounded text-sm font-medium border border-gray-200">
-                    {selectedItem.wilayah_rji}
-                  </div>
+                  <DetailRow label="Wilayah RJI" value={selectedItem.wilayah_rji} />
                 </div>
-              </div>
 
-              {/* Bagian Bawah: Alamat */}
-              <div className="mt-6">
-                <h4 className="group-title"><MapPin size={16}/> Alamat Lengkap</h4>
-                <div className="address-box">
-                  <p className="font-medium text-gray-800">{selectedItem.alamat_lengkap}</p>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Kel. {selectedItem.kelurahan}, Kec. {selectedItem.kecamatan}, <br/>
-                    {selectedItem.kota}, {selectedItem.provinsi}
-                  </p>
+                {/* Akademik */}
+                <div className="md:col-span-2 mt-2 pt-4 border-t border-slate-100">
+                   <h4 className="section-title text-blue-600 flex items-center gap-2 mb-3">
+                    <School size={16}/> Data Akademik
+                  </h4>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <DetailRow label="Program Studi" value={selectedItem.program_studi} />
+                      <DetailRow label="Kompetensi Keahlian" value={selectedItem.kompetensi_keahlian} />
+                   </div>
                 </div>
-              </div>
 
-              {/* Status Info */}
-              <div className="mt-6 flex items-center justify-between bg-blue-50 p-4 rounded-lg border border-blue-100">
-                <div className="flex items-center gap-3">
-                  <Calendar size={20} className="text-blue-600"/>
-                  <div>
-                    <p className="text-xs text-blue-600 font-semibold uppercase">Tanggal Mendaftar</p>
-                    <p className="text-sm font-bold text-gray-700">{formatDate(selectedItem.tanggal_daftar)}</p>
-                  </div>
-                </div>
-                <div>
-                  {getStatusBadge(selectedItem.status)}
-                </div>
               </div>
             </div>
 
-            {/* Footer Modal */}
-            <div className="modal-footer-modern">
-              <button className="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 font-medium transition-colors" onClick={closeModal}>
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
+              <button 
+                className="px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-200 font-medium transition-colors" 
+                onClick={closeModal}
+                disabled={actionLoading}
+              >
                 Tutup
               </button>
               
-              {/* Tombol Action hanya muncul jika status masih PENDING */}
+              {/* Tombol Aksi HANYA jika status Pending */}
               {selectedItem.status === 'pending' && (
                 <>
                   <button 
                     className="px-4 py-2 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 font-medium transition-colors flex items-center gap-2"
                     onClick={() => handleReject(selectedItem.id_pendaftaran)}
+                    disabled={actionLoading}
                   >
-                    <XCircle size={16}/> Tolak
+                    {actionLoading ? <Loader2 size={16} className="animate-spin"/> : <XCircle size={16}/>}
+                    Tolak
                   </button>
                   <button 
-                    className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 shadow-md hover:shadow-lg transition-all font-medium flex items-center gap-2"
+                    className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 shadow-sm hover:shadow-md transition-all font-medium flex items-center gap-2"
                     onClick={() => handleApprove(selectedItem.id_pendaftaran)}
+                    disabled={actionLoading}
                   >
-                    <CheckCircle size={16}/> Verifikasi
+                    {actionLoading ? <Loader2 size={16} className="animate-spin"/> : <CheckCircle size={16}/>}
+                    Verifikasi
                   </button>
                 </>
               )}
@@ -421,5 +332,13 @@ const VerifikasiPendaftaran = () => {
     </div>
   );
 };
+
+// Komponen Kecil untuk Baris Detail
+const DetailRow = ({ label, value }) => (
+  <div className="flex justify-between border-b border-slate-100 pb-1 mb-1 last:border-0">
+    <span className="text-slate-500 text-sm">{label}</span>
+    <span className="text-slate-800 font-medium text-sm text-right">{value || '-'}</span>
+  </div>
+);
 
 export default VerifikasiPendaftaran;

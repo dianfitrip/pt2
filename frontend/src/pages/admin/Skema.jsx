@@ -19,16 +19,13 @@ const Skema = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentId, setCurrentId] = useState(null);
 
-  // --- STATE TAMBAHAN UNTUK FILE ---
-  const [selectedFile, setSelectedFile] = useState(null); // Simpan file mentah disini
-
   // State Form
   const initialFormState = {
     kode_skema: '',
     judul_skema: '',
     judul_skema_en: '',
     jenis_skema: 'kkni',
-    level_kkni: '', 
+    level_kkni: '', // Nanti akan diisi angka 1-9
     bidang_okupasi: '',
     kode_sektor: '',
     kode_kbli: '',
@@ -36,7 +33,7 @@ const Skema = () => {
     keterangan_bukti: '',
     skor_min_ai05: '',
     kedalaman_bukti: 'elemen_kompetensi',
-    dokumen: '', // Ini hanya menyimpan string nama file lama (untuk edit)
+    dokumen: '',
     status: 'draft'
   };
   const [formData, setFormData] = useState(initialFormState);
@@ -61,26 +58,14 @@ const Skema = () => {
   }, []);
 
   // --- HANDLERS ---
-  
-  // 1. Handler untuk Text Input (JANGAN DIPAKAI UNTUK FILE)
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // 2. Handler KHUSUS untuk File Input
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedFile(file); // Simpan file ke state khusus
-    }
-  };
-
   const handleEdit = (item) => {
     setIsEditMode(true);
     setCurrentId(item.id_skema);
-    setSelectedFile(null); // Reset file saat mode edit dibuka
-    
     setFormData({
       kode_skema: item.kode_skema || '',
       judul_skema: item.judul_skema || '',
@@ -122,37 +107,14 @@ const Skema = () => {
     }
   };
 
-  // 3. Modifikasi Handle Submit untuk mengirim FormData (Bukan JSON)
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Siapkan FormData
-    const dataToSend = new FormData();
-
-    // Masukkan semua data text dari state formData
-    Object.keys(formData).forEach(key => {
-        // Cek agar tidak mengirim null/undefined
-        dataToSend.append(key, formData[key] || "");
-    });
-
-    // Masukkan File JIKA user memilih file baru
-    if (selectedFile) {
-        dataToSend.append('dokumen', selectedFile);
-    }
-
-    // Config Header agar backend tahu ini file
-    const config = {
-        headers: { 'Content-Type': 'multipart/form-data' }
-    };
-
     try {
       if (isEditMode) {
-        // Ganti formData dengan dataToSend
-        await api.put(`/admin/skema/${currentId}`, dataToSend, config);
+        await api.put(`/admin/skema/${currentId}`, formData);
         Swal.fire('Berhasil', 'Data skema diperbarui', 'success');
       } else {
-        // Ganti formData dengan dataToSend
-        await api.post('/admin/skema', dataToSend, config);
+        await api.post('/admin/skema', formData);
         Swal.fire('Berhasil', 'Skema baru ditambahkan', 'success');
       }
       setShowModal(false);
@@ -181,7 +143,6 @@ const Skema = () => {
             className="btn-create bg-blue-600 text-white hover:bg-blue-700"
             onClick={() => {
               setFormData(initialFormState);
-              setSelectedFile(null); // Reset file
               setIsEditMode(false);
               setShowModal(true);
             }}
@@ -326,6 +287,7 @@ const Skema = () => {
                     </select>
                   </div>
                   
+                  {/* --- PERUBAHAN: LEVEL KKNI JADI DROPDOWN 1-9 --- */}
                   <div className="form-group">
                     <label>Level KKNI</label>
                     <select 
@@ -345,6 +307,7 @@ const Skema = () => {
                       <option value="9">9</option>
                     </select>
                   </div>
+                  {/* ----------------------------------------------- */}
                 </div>
 
                 <div className="form-group">
@@ -386,25 +349,10 @@ const Skema = () => {
                   <textarea name="keterangan_bukti" rows="3" value={formData.keterangan_bukti} onChange={handleInputChange} className="w-full p-2 border rounded-lg"></textarea>
                 </div>
                 
-                {/* --- BAGIAN INI YANG DIMODIFIKASI MENJADI INPUT FILE --- */}
                 <div className="form-group">
-                  <label>Unggah Dokumen (PDF)</label>
-                  <input 
-                    type="file" 
-                    name="dokumen" 
-                    onChange={handleFileChange} 
-                    accept=".pdf,.doc,.docx"
-                    // Jangan pakai value={formData.dokumen} di input file karena akan error security browser
-                  />
-                  {/* Tampilkan nama file lama jika sedang edit dan user belum pilih file baru */}
-                  {isEditMode && formData.dokumen && !selectedFile && (
-                    <p className="text-xs text-blue-600 mt-1">
-                      File saat ini: {formData.dokumen}
-                    </p>
-                  )}
+                  <label>Link Dokumen (G-Drive / URL)</label>
+                  <input type="text" name="dokumen" value={formData.dokumen} onChange={handleInputChange} placeholder="https://..." />
                 </div>
-                {/* ----------------------------------------------------- */}
-
               </form>
             </div>
 

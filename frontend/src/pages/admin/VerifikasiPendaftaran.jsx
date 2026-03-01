@@ -4,7 +4,7 @@ import api from "../../services/api";
 import { 
   Search, Eye, CheckCircle, XCircle, 
   User, MapPin, Phone, Mail, School, 
-  Loader2, Clock // Menambahkan Clock
+  Loader2, Clock 
 } from 'lucide-react';
 import './adminstyles/VerifikasiPendaftaran.css';
 
@@ -24,10 +24,7 @@ const VerifikasiPendaftaran = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // Endpoint: GET /admin/pendaftaran
       const response = await api.get('/admin/pendaftaran');
-      
-      // Ambil data dari response backend
       const resultData = response.data.data || []; 
       
       setData(resultData);
@@ -79,7 +76,8 @@ const VerifikasiPendaftaran = () => {
     if (result.isConfirmed) {
       setActionLoading(true);
       try {
-        await api.put(`/admin/pendaftaran/${id_pendaftaran}/approve`);
+        // PERBAIKAN: Gunakan POST, bukan PUT
+        await api.post(`/admin/pendaftaran/${id_pendaftaran}/approve`);
         
         Swal.fire('Berhasil!', 'Pendaftaran diverifikasi. Email notifikasi telah dikirim.', 'success');
         setShowModal(false);
@@ -109,7 +107,8 @@ const VerifikasiPendaftaran = () => {
     if (result.isConfirmed) {
       setActionLoading(true);
       try {
-        await api.put(`/admin/pendaftaran/${id_pendaftaran}/reject`);
+        // PERBAIKAN: Gunakan POST, bukan PUT
+        await api.post(`/admin/pendaftaran/${id_pendaftaran}/reject`);
         
         Swal.fire('Ditolak!', 'Pendaftaran telah ditolak.', 'success');
         setShowModal(false);
@@ -141,7 +140,6 @@ const VerifikasiPendaftaran = () => {
       case 'rejected':
         return <span className="status-badge status-rejected"><XCircle size={14}/> Rejected</span>;
       default:
-        // PERUBAHAN DISINI: Menggunakan Clock (tanpa animasi)
         return <span className="status-badge status-pending"><Clock size={14}/> Pending</span>;
     }
   };

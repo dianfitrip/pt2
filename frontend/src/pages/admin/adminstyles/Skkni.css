@@ -1,0 +1,314 @@
+/* Container Utama */
+.skkni-container {
+  padding: 24px;
+  background-color: #f8fafc; /* Slate-50 */
+  border-radius: 12px;
+  font-family: 'Inter', sans-serif;
+  min-height: 85vh;
+}
+
+/* Header Section */
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.title-box h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.title-box p {
+  font-size: 14px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+/* Tombol Tambah (Diperlebar) */
+.btn-create {
+  background-color: #2563eb; /* Blue-600 */
+  color: white;
+  padding: 12px 24px; /* Padding diperbesar */
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2);
+  white-space: nowrap; /* Teks tidak akan turun baris */
+}
+
+.btn-create:hover {
+  background-color: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+/* Search Box */
+.search-box {
+  position: relative;
+  max-width: 350px; /* Sedikit diperlebar */
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 16px 12px 40px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+/* Tabel Styles */
+.table-container {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  overflow-x: auto; /* Scroll jika layar kecil */
+  border: 1px solid #e2e8f0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px; /* Memastikan tabel tidak terlalu gepeng */
+}
+
+thead {
+  background-color: #f1f5f9;
+}
+
+th {
+  padding: 16px;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+td {
+  padding: 16px;
+  font-size: 14px;
+  color: #334155;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+tr:hover {
+  background-color: #f8fafc;
+}
+
+/* --- PERBAIKAN TOMBOL AKSI AGAR LEBIH PANJANG --- */
+.action-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.btn-action {
+  padding: 8px 16px; /* Kanan kiri diperlebar */
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px; /* Font sedikit dibesarkan agar jelas */
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: opacity 0.2s;
+  color: white;
+  min-width: 90px; /* Lebar minimal agar teks tidak kepotong */
+  white-space: nowrap; /* Mencegah teks turun baris */
+}
+
+.btn-action:hover {
+  opacity: 0.9;
+  transform: scale(1.02); /* Efek sedikit membesar saat hover */
+}
+
+.btn-detail { background-color: #0ea5e9; } 
+.btn-edit { background-color: #f59e0b; }   
+.btn-delete { background-color: #ef4444; } 
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+  animation: fadeIn 0.2s;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.3s;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.modal-footer {
+  padding: 20px 24px;
+  background-color: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Tombol di Modal (Footer) */
+.modal-footer .btn-action {
+  padding: 10px 24px; /* Tombol Simpan lebih besar */
+  min-width: 100px;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 20px;
+}
+.btn-close:hover { color: #64748B; }
+
+/* Form Styles */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group.full-width {
+  grid-column: span 2;
+}
+
+.form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: #475569;
+  margin-bottom: 6px;
+}
+
+.form-control {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+}
+
+.form-control:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.file-info {
+  font-size: 12px;
+  color: #64748b;
+  margin-top: 4px;
+  font-style: italic;
+  background: #f1f5f9;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+/* Detail View Styles */
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.detail-item label {
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #94a3b8;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.detail-item p {
+  font-size: 15px;
+  color: #334155;
+  font-weight: 500;
+  background: #f8fafc;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  margin: 0;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideIn {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

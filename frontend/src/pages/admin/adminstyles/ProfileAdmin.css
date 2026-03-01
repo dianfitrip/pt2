@@ -1,0 +1,271 @@
+/* Container Page */
+.profile-page-container {
+  min-height: 100vh;
+  background-color: #F8FAFC; /* Background abu-abu terang */
+  font-family: 'Inter', sans-serif;
+  padding-bottom: 60px;
+}
+
+/* 1. Header Dark - Terpisah */
+.profile-header-dark {
+  background-color: #1E293B; /* Slate 800 - Gelap */
+  padding: 40px 40px;
+  color: white;
+  margin-bottom: 30px; /* Jarak antara header dan konten */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.header-desc {
+  color: #94A3B8; /* Slate 400 */
+  font-size: 14px;
+}
+
+/* 2. Layout Grid untuk Konten */
+.profile-content-body {
+  display: grid;
+  grid-template-columns: 350px 1fr; /* Sidebar tetap, Kanan responsif */
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 40px;
+}
+
+/* Common Card Style */
+.card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  border: 1px solid #E2E8F0;
+  overflow: hidden;
+}
+
+/* --- SIDEBAR KIRI --- */
+.profile-summary-card {
+  padding: 30px;
+  text-align: center;
+}
+
+.avatar-section {
+  border-bottom: 1px solid #F1F5F9;
+  padding-bottom: 24px;
+  margin-bottom: 24px;
+}
+
+.avatar-box {
+  width: 100px;
+  height: 100px;
+  background-color: #3B82F6;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  font-weight: 700;
+  margin: 0 auto 16px;
+}
+
+.user-fullname {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1E293B;
+  margin-bottom: 8px;
+}
+
+.user-role-badge {
+  background-color: #EFF6FF;
+  color: #2563EB;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.account-details {
+  text-align: left;
+}
+
+.detail-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.detail-item .icon {
+  color: #94A3B8;
+  margin-top: 2px;
+}
+
+.detail-item label {
+  display: block;
+  font-size: 11px;
+  color: #64748B;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.detail-item p {
+  color: #334155;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* --- KOLOM KANAN (FORM) --- */
+.form-card {
+  padding: 30px;
+}
+
+.card-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.card-header-flex h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1E293B;
+  margin: 0;
+}
+
+.btn-action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-action.edit {
+  background-color: #EFF6FF;
+  color: #2563EB;
+}
+.btn-action.edit:hover { background-color: #DBEAFE; }
+
+.btn-action.cancel {
+  background-color: #F1F5F9;
+  color: #64748B;
+}
+.btn-action.cancel:hover { background-color: #E2E8F0; }
+
+/* Form Styles */
+.form-section {
+  margin-bottom: 30px;
+  border-bottom: 1px dashed #E2E8F0;
+  padding-bottom: 24px;
+}
+.form-section.no-border { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+.form-section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #3B82F6;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  letter-spacing: 0.5px;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.input-group {
+  margin-bottom: 4px;
+}
+
+.input-group.full-width {
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748B;
+  margin-bottom: 6px;
+}
+
+.input-group input, 
+.input-group textarea, 
+.input-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #CBD5E1;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #1E293B;
+  background: white;
+  transition: border 0.2s;
+}
+
+/* State Disabled (View Mode) */
+.input-group input:disabled,
+.input-group textarea:disabled {
+  background-color: #F8FAFC;
+  color: #475569;
+  border-color: #E2E8F0;
+  cursor: default;
+}
+
+.input-group input:focus,
+.input-group textarea:focus,
+.input-group select:focus {
+  outline: none;
+  border-color: #3B82F6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-submit-area {
+  margin-top: 30px;
+  border-top: 1px solid #E2E8F0;
+  padding-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-save-changes {
+  background-color: #10B981;
+  color: white;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.btn-save-changes:hover { background-color: #059669; }
+
+.mt-3 { margin-top: 16px; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .profile-content-body {
+    grid-template-columns: 1fr;
+    padding: 0 20px;
+  }
+  .grid-2 { grid-template-columns: 1fr; gap: 16px; }
+}

@@ -1,0 +1,65 @@
+.jadwal-container {
+  padding: 24px;
+  background-color: #FFFFFF;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  font-family: 'Inter', sans-serif;
+  min-height: 80vh;
+}
+
+/* Header & Filter (Sama dengan Asesor/TUK) */
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #F1F5F9;
+  padding-bottom: 20px;
+}
+
+.title-box h2 { font-size: 20px; font-weight: 700; color: #0F172A; margin: 0; }
+.title-box p { font-size: 14px; color: #64748B; margin: 4px 0 0 0; }
+
+.action-buttons-group { display: flex; gap: 12px; }
+.btn-create, .btn-export { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 14px; font-weight: 500; }
+.btn-create { background-color: #F97316; color: white; }
+.btn-export { background-color: #F1F5F9; color: #475569; }
+
+.filter-section { margin-bottom: 24px; }
+.search-box { position: relative; width: 320px; }
+.search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #94A3B8; }
+.search-box input { width: 100%; padding: 10px 10px 10px 40px; border: 1px solid #E2E8F0; border-radius: 8px; font-size: 14px; }
+
+/* Table */
+.table-container { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th { background-color: #F8FAFC; padding: 14px 16px; text-align: left; font-size: 13px; color: #475569; font-weight: 600; white-space: nowrap; }
+.data-table td { padding: 14px 16px; border-bottom: 1px solid #F1F5F9; font-size: 14px; color: #334155; }
+
+.badge-anggaran { background: #EEF2FF; color: #4F46E5; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+
+.btn-action { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; transition: 0.2s; }
+.btn-action.view { background: #DBEAFE; color: #1E40AF; }
+.btn-action.edit { background: #FEF3C7; color: #D97706; }
+.btn-action.delete { background: #FEE2E2; color: #DC2626; }
+
+/* Modal */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 50; }
+.modal-content.large-modal { width: 700px; max-width: 95%; background: white; border-radius: 12px; max-height: 90vh; display: flex; flex-direction: column; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid #E2E8F0; }
+.modal-header h3 { font-size: 18px; font-weight: 600; margin: 0; }
+.btn-close { background: none; border: none; cursor: pointer; color: #64748B; }
+
+.scrollable-body { padding: 24px; overflow-y: auto; }
+.section-title { font-size: 15px; font-weight: 600; color: #0F172A; margin: 20px 0 12px 0; border-bottom: 1px dashed #E2E8F0; padding-bottom: 6px; }
+.section-title:first-child { margin-top: 0; }
+
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 6px; color: #334155; }
+.form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #CBD5E1; border-radius: 8px; font-size: 14px; }
+.form-row { display: flex; gap: 16px; }
+.form-row .form-group { flex: 1; }
+
+.modal-footer { padding: 20px 24px; border-top: 1px solid #E2E8F0; display: flex; justify-content: flex-end; gap: 12px; }
+.btn-save { background: #F97316; color: white; border: none; padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.btn-cancel { background: #F1F5F9; color: #475569; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }

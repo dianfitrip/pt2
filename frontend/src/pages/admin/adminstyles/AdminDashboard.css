@@ -1,0 +1,388 @@
+/* --- LAYOUT UTAMA --- */
+.admin-layout {
+  display: flex;
+  background-color: #F8FAFC; /* Slate 50 lembut */
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: 280px; /* Sesuai lebar sidebar */
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- TOP HEADER (NAVBAR BARU) --- */
+.top-header {
+  height: 80px;
+  /* Background diubah menjadi gradasi oranye */
+  background: linear-gradient(180deg, #FF8A00 0%, #FFB156 100%);
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: none; /* Border bawah dihilangkan agar lebih menyatu */
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  box-shadow: 0 4px 12px rgba(255, 138, 0, 0.2); /* Tambahan bayangan halus */
+}
+
+.header-title h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff !important; /* Warna teks jadi putih */
+}
+
+.header-title .subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85) !important; /* Putih sedikit transparan */
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.notif-btn {
+  background: none;
+  border: none;
+  font-size: 18px;
+  color: #ffffff; /* Ikon notifikasi jadi putih */
+  position: relative;
+  cursor: pointer;
+}
+
+.badge-dot {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background: #EF4444;
+  border-radius: 50%;
+  border: 2px solid #FF8A00; /* Border disesuaikan agar menyatu dengan background oranye */
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.user-profile .text-right {
+  text-align: right;
+}
+
+.user-profile .name {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff !important; /* Nama user putih */
+}
+
+.user-profile .role {
+  display: block;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8) !important; /* Role putih transparan */
+}
+
+.user-profile .avatar {
+  width: 40px;
+  height: 40px;
+  background: #ffffff; /* Background avatar putih */
+  color: #FF8A00; /* Teks inisial oranye */
+  font-weight: 700;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255, 255, 255, 0.5); /* Border putih tipis */
+}
+
+.content-area {
+  padding: 24px 32px;
+  flex: 1;
+}
+
+/* --- DASHBOARD OVERVIEW STYLES --- */
+
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* 1. Stats Grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.stat-card {
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  transition: transform 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.stat-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+}
+
+/* Icon Colors */
+.bg-orange { background: #FFF7ED; color: #FF8A00; }
+.bg-blue { background: #EFF6FF; color: #3B82F6; }
+.bg-green { background: #F0FDF4; color: #22C55E; }
+.bg-purple { background: #FAF5FF; color: #A855F7; }
+
+.stat-info h3 {
+  font-size: 26px;
+  font-weight: 800;
+  margin: 0;
+  color: #1E293B;
+}
+
+.stat-info p {
+  font-size: 13px;
+  color: #64748B;
+  margin: 0;
+}
+
+.stat-trend {
+  margin-left: auto;
+}
+
+.trend-badge {
+  background: #ECFDF5;
+  color: #10B981;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 2. Charts & Tables Common */
+.charts-grid, .bottom-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr; /* Kiri lebih besar */
+  gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .charts-grid, .bottom-grid { grid-template-columns: 1fr; }
+}
+
+.card-box {
+  background: #FFFFFF;
+  border-radius: 12px;
+  padding: 24px;
+  border: 1px solid #E2E8F0;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.card-header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.card-header-inner h4 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1E293B;
+  margin: 0;
+}
+
+.btn-icon-small {
+  background: none;
+  border: none;
+  color: #94A3B8;
+  cursor: pointer;
+}
+
+/* Bar Chart List */
+.bar-chart-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.bar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+
+.bar-item span { width: 70px; font-weight: 500; color: #64748B; }
+
+.progress-track {
+  flex: 1;
+  height: 8px;
+  background: #F1F5F9;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #FF8A00, #FFB04D);
+  border-radius: 4px;
+}
+
+.bar-item .val {
+  width: 40px;
+  text-align: right;
+  font-weight: 700;
+  color: #1E293B;
+}
+
+/* Pie Chart */
+.pie-chart-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pie-chart {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.pie-center {
+  width: 110px;
+  height: 110px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.pie-center span { font-size: 24px; font-weight: 800; color: #FF8A00; }
+.pie-center small { font-size: 11px; color: #94A3B8; }
+
+.chart-legend {
+  display: flex;
+  gap: 16px;
+}
+.legend-item { font-size: 12px; color: #64748B; display: flex; align-items: center; gap: 6px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; }
+.dot.orange { background: #FF8A00; }
+.dot.gray { background: #E2E8F0; }
+
+/* 3. Table Styles */
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dashboard-table th {
+  text-align: left;
+  font-size: 12px;
+  color: #94A3B8;
+  font-weight: 600;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #E2E8F0;
+  text-transform: uppercase;
+}
+
+.dashboard-table td {
+  padding: 14px 0;
+  font-size: 13.5px;
+  color: #475569;
+  border-bottom: 1px solid #F8FAFC;
+}
+
+.dashboard-table .fw-bold { font-weight: 600; color: #1E293B; }
+
+.badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badge.verifikasi { background: #EFF6FF; color: #3B82F6; }
+.badge.diterima { background: #ECFDF5; color: #10B981; }
+.badge.ditolak { background: #FEF2F2; color: #EF4444; }
+.badge.menunggu { background: #FFF7ED; color: #F59E0B; }
+
+.link-text {
+  font-size: 12px;
+  color: #FF8A00;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* Schedule List */
+.schedule-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.schedule-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px;
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+
+.schedule-item:hover {
+  background: #F8FAFC;
+}
+
+.date-box {
+  background: #FFF7ED;
+  color: #FF8A00;
+  border-radius: 8px;
+  padding: 8px 12px;
+  text-align: center;
+  min-width: 55px;
+  border: 1px solid #FFEDD5;
+}
+
+.date-box .d { display: block; font-size: 18px; font-weight: 800; line-height: 1; }
+.date-box .m { font-size: 10px; font-weight: 600; }
+
+.schedule-item .info h5 { margin: 0 0 4px; font-size: 14px; color: #1E293B; }
+.schedule-item .info p { margin: 0; font-size: 12px; color: #64748B; }
+
+.text-muted { color: #94A3B8; }

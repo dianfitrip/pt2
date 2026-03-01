@@ -5,7 +5,7 @@ import { getProvinsi, getKota, getKecamatan, getKelurahan } from "../../services
 import { 
   Search, Plus, Eye, Edit2, Trash2, X, Save, 
   User as UserIcon, Loader2, Upload, FileSpreadsheet,
-  Briefcase, GraduationCap, MapPin
+  Briefcase, GraduationCap, MapPin, Mail // <-- Tambah Mail icon di sini
 } from 'lucide-react';
 import './adminstyles/Asesor.css'; 
 
@@ -76,23 +76,17 @@ const Asesor = () => {
       
       // 1. Tangkap response body, apakah dari bawaan axios atau sudah di-intercept
       const resBody = response.data !== undefined ? response.data : response;
-      
-      // Coba lihat di inspect element -> console browser untuk memastikan isinya
-      console.log("ISI RESPONSE BACKEND:", resBody);
 
       // 2. Deteksi otomatis di mana letak Array data asesor berada
       let listData = [];
       let pag = null;
 
       if (Array.isArray(resBody.data)) {
-          // Format dari response.util.js: { success: true, message: "...", data: [...] }
           listData = resBody.data;
       } else if (resBody.data?.data && Array.isArray(resBody.data.data)) {
-          // Jika backend membungkusnya lagi dengan pagination
           listData = resBody.data.data;
           pag = resBody.data.pagination;
       } else if (Array.isArray(resBody)) {
-          // Jika kembaliannya langsung murni array
           listData = resBody;
       }
 
@@ -247,6 +241,42 @@ const Asesor = () => {
     }
   };
 
+  // --- FUNGSI KIRIM AKUN (SEND ACCOUNT) ---
+  const handleSendAccount = async (id_user) => {
+    // Pastikan mengirim ID User dari relasi (bukan ID asesor)
+    if (!id_user) {
+        return Swal.fire('Error', 'Data User (Akun) tidak ditemukan untuk asesor ini.', 'error');
+    }
+
+    const confirm = await Swal.fire({
+      title: 'Kirim Informasi Akun?',
+      text: "Sistem akan mengirimkan email berisi Username dan Password ke alamat email Asesor tersebut.",
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#28a745',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Ya, Kirim Email'
+    });
+
+    if (confirm.isConfirmed) {
+      try {
+        Swal.fire({
+          title: 'Mengirim Email...',
+          text: 'Harap tunggu sebentar',
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading()
+        });
+
+        await api.post(`/admin/send-email/${id_user}`);
+
+        Swal.fire('Terkirim!', 'Informasi akun berhasil dikirim ke email asesor.', 'success');
+      } catch (error) {
+        console.error("Gagal mengirim email:", error);
+        Swal.fire('Gagal', error.response?.data?.message || 'Terjadi kesalahan saat mengirim email.', 'error');
+      }
+    }
+  };
+
   // --- RESET FORM ---
   const resetForm = () => {
     setFormData(initialFormState);
@@ -368,7 +398,7 @@ const Asesor = () => {
                 <th>Bidang Keahlian</th>
                 <th>No. MET</th>
                 <th>Status</th>
-                <th style={{width: '150px'}}>Aksi</th>
+                <th style={{width: '200px'}}>Aksi</th>
               </tr>
             </thead>
             <tbody>
@@ -391,7 +421,18 @@ const Asesor = () => {
                       </span>
                     </td>
                     <td>
-                      <div className="action-buttons">
+                      <div className="action-buttons flex gap-2">
+                        
+                        {/* TOMBOL SEND ACCOUNT BARU */}
+                        <button 
+                            className="bg-green-100 text-green-600 hover:bg-green-200 p-1.5 rounded-md flex items-center justify-center transition-colors" 
+                            onClick={() => handleSendAccount(item.id_user)} 
+                            title="Kirim Akun via Email"
+                        >
+                          <Mail size={16} />
+                        </button>
+                        {/* ------------------------- */}
+
                         <button className="btn-icon-view" onClick={() => { handleEdit(item); setIsDetailMode(true); }} title="Detail">
                           <Eye size={18} />
                         </button>

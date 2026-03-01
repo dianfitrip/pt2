@@ -63,3 +63,23 @@
 .modal-footer { padding: 20px 24px; border-top: 1px solid #E2E8F0; display: flex; justify-content: flex-end; gap: 12px; }
 .btn-save { background: #F97316; color: white; border: none; padding: 10px 20px; border-radius: 8px; display: flex; align-items: center; gap: 8px; cursor: pointer; }
 .btn-cancel { background: #F1F5F9; color: #475569; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+
+
+/* --- PERBAIKAN DROPDOWN ARROW --- */
+.form-select {
+  appearance: none; /* Hapus panah default browser yang jelek */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem; /* Beri ruang untuk panah */
+}
+
+/* Pastikan input tidak terlihat disable warna backgroundnya */
+.form-input, .form-select {
+  background-color: #fff;
+  border: 1px solid #cbd5e1;
+  color: #334155;
+}

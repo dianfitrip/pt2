@@ -20,7 +20,7 @@ const Sidebar = () => {
     standar: false,
     biaya: false,
     event: false,
-    tuk: false, // <-- Menambahkan state dropdown untuk TUK
+    tuk: false, 
     asesi: false,
     asesor: false,
     manajemen: false,
@@ -37,7 +37,7 @@ const Sidebar = () => {
       standar: prev.standar || path.includes('/admin/unit-kompetensi') || path.includes('/admin/skkni'),
       biaya: prev.biaya || path.includes('/admin/biaya'),
       event: prev.event || path.includes('/admin/jadwal'),
-      tuk: prev.tuk || path.includes('/admin/tuk'), // <-- Auto-open untuk dropdown TUK
+      tuk: prev.tuk || path.includes('/admin/tuk'), 
       asesi: prev.asesi || path.includes('/admin/asesi') || path.includes('/admin/verifikasi-pendaftaran'),
       asesor: prev.asesor || path.includes('/admin/asesor'),
       manajemen: prev.manajemen || path.includes('/admin/manajemen'),
@@ -73,10 +73,8 @@ const Sidebar = () => {
   const handleLogout = () => {
     const isConfirm = window.confirm("Yakin mau keluar dari sistem?");
     if (isConfirm) {
-      // Hapus token/data user dari local storage jika ada
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      // Arahkan ke halaman login
       navigate('/login');
     }
   };
@@ -85,17 +83,14 @@ const Sidebar = () => {
     <div className="sidebar">
       {/* CSS KHUSUS SIDEBAR ORANYE */}
       <style>{`
-        /* Mengubah semua teks menu dan ikon menjadi warna hitam/gelap */
         .nav-item, .submenu-item, .nav-section-label, .nav-label, .nav-icon, .arrow-icon {
           color: #1e293b !important; 
         }
         
-        /* Teks logo SILSP juga dihitamkan */
         .logo-text h1, .logo-text p, .logo-icon {
           color: #1e293b !important;
         }
 
-        /* HIGHLIGHT MENU AKTIF: Kotak Putih, Teks Hitam (TIDAK BOLD) */
         .nav-item.active, .submenu-item.active {
           font-weight: 500 !important;
           background-color: #ffffff !important; 
@@ -104,42 +99,35 @@ const Sidebar = () => {
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); 
         }
         
-        /* Pastikan Ikon dan Teks di dalam menu aktif tetap hitam pekat */
         .nav-item.active .nav-icon, .nav-item.active .nav-label {
           color: #000000 !important; 
         }
 
-        /* Titik submenu saat aktif jadi hitam */
         .submenu-item.active .dot {
           background-color: #000000 !important;
           box-shadow: none !important;
         }
         
-        /* Hover Effect untuk menu biasa */
         .nav-item:hover, .submenu-item:hover {
           background-color: rgba(255, 255, 255, 0.3) !important; 
         }
 
-        /* ================================================== */
-        /* CSS KHUSUS TOMBOL LOGOUT                           */
-        /* ================================================== */
         .sidebar-footer .logout {
-          color: #1e293b !important; /* Teks default warna hitam */
+          color: #1e293b !important; 
           transition: all 0.2s ease-in-out;
         }
         .sidebar-footer .logout .nav-icon {
-          color: #000000 !important; /* Ikon default warna hitam pekat */
+          color: #000000 !important; 
         }
         
-        /* Saat kursor diarahkan ke tombol Logout, berubah jadi merah peringatan */
         .sidebar-footer .logout:hover {
-          background-color: #fee2e2 !important; /* Background merah muda pastel */
-          color: #b91c1c !important; /* Teks Merah menyala tebal */
+          background-color: #fee2e2 !important; 
+          color: #b91c1c !important; 
           font-weight: bold !important;
           border-radius: 6px;
         }
         .sidebar-footer .logout:hover .nav-icon {
-          color: #b91c1c !important; /* Ikon berubah Merah menyala */
+          color: #b91c1c !important; 
         }
       `}</style>
 
@@ -259,7 +247,6 @@ const Sidebar = () => {
           </div>
         )}
 
-        {/* --- PERUBAHAN TUK MENJADI DROPDOWN --- */}
         <button className={`nav-item has-submenu ${openMenus.tuk ? 'open' : ''} ${isActive('/admin/tuk') ? 'active' : ''}`} onClick={() => toggleMenu('tuk')}>
           <div className="nav-icon"><FaBuilding /></div>
           <span className="nav-label">Tempat Uji (TUK)</span>
@@ -275,7 +262,6 @@ const Sidebar = () => {
             </button>
           </div>
         )}
-        {/* --- AKHIR PERUBAHAN TUK --- */}
 
         <button className={`nav-item has-submenu ${openMenus.asesi ? 'open' : ''} ${(isActive('/admin/asesi') || isActive('/admin/verifikasi-pendaftaran')) ? 'active' : ''}`} onClick={() => toggleMenu('asesi')}>
           <div className="nav-icon"><FaUserGraduate /></div>
@@ -286,6 +272,13 @@ const Sidebar = () => {
           <div className="submenu">
             <button className={`submenu-item ${isActive('/admin/asesi/cari') ? 'active' : ''}`} onClick={() => handleNav('/admin/asesi/cari')}><span className="dot"></span> Pencarian Asesi</button>
             <button className={`submenu-item ${isActive('/admin/verifikasi-pendaftaran') ? 'active' : ''}`} onClick={() => handleNav('/admin/verifikasi-pendaftaran')}><span className="dot"></span> Pendaftar Baru</button>
+            
+            {/* === SEMUA MENU MAPA DARI BACKEND DITAMPILKAN DI SINI === */}
+            <button className={`submenu-item ${isActive('/admin/asesi/mapa') && !location.pathname.includes('/m01') && !location.pathname.includes('/m02') ? 'active' : ''}`} onClick={() => handleNav('/admin/asesi/mapa')}><span className="dot"></span> MAPA</button>
+            <button className={`submenu-item ${location.pathname.includes('/m01') ? 'active' : ''}`} onClick={() => handleNav('/admin/asesi/mapa')}><span className="dot"></span> MAPA-01</button>
+            <button className={`submenu-item ${location.pathname.includes('/m02') ? 'active' : ''}`} onClick={() => handleNav('/admin/asesi/mapa')}><span className="dot"></span> MAPA-02</button>
+            {/* ========================================================= */}
+
             <button className={`submenu-item ${isActive('/admin/asesi/ia01-observasi') ? 'active' : ''}`} onClick={() => handleNav('/admin/asesi/ia01-observasi')}><span className="dot"></span> IA.01 Observasi</button>
             <button className={`submenu-item ${isActive('/admin/asesi/ia03-pertanyaan') ? 'active' : ''}`} onClick={() => handleNav('/admin/asesi/ia03-pertanyaan')}><span className="dot"></span> IA.03 Pertanyaan</button>
             <button className={`submenu-item ${isActive('/admin/asesi/terjadwal') ? 'active' : ''}`} onClick={() => handleNav('/admin/asesi/terjadwal')}><span className="dot"></span> Terjadwal</button>

@@ -46,7 +46,7 @@ const Asesor = () => {
     gelar_belakang: '',
     jenis_kelamin: 'laki-laki',
     tempat_lahir: '',
-    tanggal_lahir: '', // Frontend pakai string kosong utk input date
+    tanggal_lahir: '', 
     kebangsaan: 'Indonesia',
     pendidikan_terakhir: 'S1',
     tahun_lulus: '',
@@ -54,37 +54,59 @@ const Asesor = () => {
     alamat: '',
     rt: '',
     rw: '',
-    provinsi: '', // Backend butuh String Nama
-    kota: '',     // Backend butuh String Nama
-    kecamatan: '',// Backend butuh String Nama
-    kelurahan: '',// Backend butuh String Nama
+    provinsi: '', 
+    kota: '',     
+    kecamatan: '',
+    kelurahan: '',
     kode_pos: '',
     bidang_keahlian: '',
     no_reg_asesor: '',
     no_lisensi: '',
-    masa_berlaku: '', // Frontend pakai string kosong utk input date
+    masa_berlaku: '', 
     status_asesor: 'aktif'
   };
 
   const [formData, setFormData] = useState(initialFormState);
 
-  // --- FETCH DATA LIST ---
+  // --- FETCH DATA LIST (LOGIKA SUPER AMAN) ---
   const fetchData = async (page = 1, search = '') => {
     setLoading(true);
     try {
       const response = await api.get(`/admin/asesor?page=${page}&limit=${pagination.limit}&search=${search}`);
-      const { data: listData, pagination: pag } = response.data.data; 
       
-      setData(listData || []); 
+      // 1. Tangkap response body, apakah dari bawaan axios atau sudah di-intercept
+      const resBody = response.data !== undefined ? response.data : response;
+      
+      // Coba lihat di inspect element -> console browser untuk memastikan isinya
+      console.log("ISI RESPONSE BACKEND:", resBody);
+
+      // 2. Deteksi otomatis di mana letak Array data asesor berada
+      let listData = [];
+      let pag = null;
+
+      if (Array.isArray(resBody.data)) {
+          // Format dari response.util.js: { success: true, message: "...", data: [...] }
+          listData = resBody.data;
+      } else if (resBody.data?.data && Array.isArray(resBody.data.data)) {
+          // Jika backend membungkusnya lagi dengan pagination
+          listData = resBody.data.data;
+          pag = resBody.data.pagination;
+      } else if (Array.isArray(resBody)) {
+          // Jika kembaliannya langsung murni array
+          listData = resBody;
+      }
+
+      // 3. Masukkan ke state tabel
+      setData(listData); 
       setPagination(prev => ({
         ...prev,
-        page: pag?.currentPage || 1,
-        total: pag?.totalItems || 0,
+        page: pag?.currentPage || page,
+        total: pag?.totalItems || listData.length,
         totalPages: pag?.totalPages || 1
       }));
+
     } catch (error) {
       console.error("Error fetching:", error);
-      // Jangan tampilkan alert error saat loading awal agar tidak mengganggu UX jika token expired
     } finally {
       setLoading(false);
     }
@@ -107,17 +129,15 @@ const Asesor = () => {
     loadProvinsi();
   }, []);
 
-  // --- HANDLERS WILAYAH (Frontend Logic: ID utk Fetch, Nama utk DB) ---
+  // --- HANDLERS WILAYAH ---
   const handleProvinsiChange = async (e) => {
     const id = e.target.value;
     const index = e.target.selectedIndex;
     const text = e.target.options[index].text; 
 
     setSelectedProvinsiId(id);
-    // Simpan NAMA provinsi ke formData agar backend senang
     setFormData({ ...formData, provinsi: id ? text : '', kota: '', kecamatan: '', kelurahan: '' });
     
-    // Reset anak-anaknya
     setKotaList([]);
     setKecamatanList([]);
     setKelurahanList([]);
@@ -184,11 +204,10 @@ const Asesor = () => {
     }));
   };
 
-  // --- SUBMIT HANDLER (PERBAIKAN UTAMA DISINI) ---
+  // --- SUBMIT HANDLER ---
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // 1. Validasi Wajib
     if(!formData.nik || !formData.email || !formData.nama_lengkap) {
         Swal.fire('Peringatan', 'NIK, Email, dan Nama Lengkap wajib diisi!', 'warning');
         return;
@@ -201,22 +220,14 @@ const Asesor = () => {
         didOpen: () => Swal.showLoading()
       });
 
-      // 2. SANITASI DATA AGAR BACKEND TIDAK ERROR 500
-      // Kita copy formData dan ubah field yang bermasalah sebelum dikirim
       const payload = { ...formData };
 
-      // Fix Date: Ubah string kosong "" menjadi null
       if (payload.tanggal_lahir === "") payload.tanggal_lahir = null;
       if (payload.masa_berlaku === "") payload.masa_berlaku = null;
-
-      // Fix Number: Ubah string jadi integer, kosong jadi null
       payload.tahun_lulus = payload.tahun_lulus ? parseInt(payload.tahun_lulus) : null;
-
-      // Fix String: Pastikan NIK & HP string murni
       payload.nik = String(payload.nik).trim();
       payload.no_hp = String(payload.no_hp).trim();
 
-      // Kirim ke Backend
       if (isEditMode) {
         await api.put(`/admin/asesor/${currentId}`, payload);
         Swal.fire('Berhasil', 'Data asesor diperbarui', 'success');
@@ -226,12 +237,11 @@ const Asesor = () => {
       }
 
       setShowModal(false);
-      fetchData(pagination.page); // Refresh tabel
+      fetchData(pagination.page); 
       resetForm();
 
     } catch (error) {
       console.error("Submit Error:", error);
-      // Ambil pesan error dari backend jika ada
       const msg = error.response?.data?.message || 'Gagal menyimpan data. Cek inputan Anda.';
       Swal.fire('Gagal', msg, 'error');
     }
@@ -259,8 +269,6 @@ const Asesor = () => {
     setIsEditMode(true);
     setCurrentId(item.id_user || item.id);
     
-    // Isi data ke form
-    // Note: Utk tanggal, kita ambil bagian 'YYYY-MM-DD' saja dari ISO string
     setFormData({
         nik: item.nik,
         email: item.user?.email || item.email || '', 
@@ -366,7 +374,7 @@ const Asesor = () => {
             <tbody>
               {data.length > 0 ? (
                 data.map((item, index) => (
-                  <tr key={item.id_user || index}>
+                  <tr key={item.id_user || item.id || index}>
                     <td>{(pagination.page - 1) * pagination.limit + index + 1}</td>
                     <td>{item.nik}</td>
                     <td>
@@ -497,7 +505,6 @@ const Asesor = () => {
                       <option value="">Pilih Provinsi</option>
                       {provinsiList.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                     </select>
-                    {/* Tampilkan data lama jika belum diubah */}
                     {!selectedProvinsiId && formData.provinsi && <small className="text-gray-500">Saat ini: {formData.provinsi}</small>}
                   </div>
 
@@ -525,7 +532,6 @@ const Asesor = () => {
                       <option value="">Pilih Kelurahan</option>
                       {kelurahanList.map(k => <option key={k.id} value={k.id}>{k.name}</option>)}
                     </select>
-                    {/* Utk kelurahan agak tricky utk set default value select jika hanya punya nama, jadi tampilkan text saja */}
                     {formData.kelurahan && <small className="text-gray-500">Saat ini: {formData.kelurahan}</small>}
                   </div>
 
@@ -617,7 +623,7 @@ const Asesor = () => {
         </div>
       )}
 
-      {/* IMPORT MODAL (Dummy) */}
+      {/* IMPORT MODAL */}
       {showImportModal && (
         <div className="modal-backdrop">
           <div className="modal-card" style={{ maxWidth: '500px', height: 'auto' }}>

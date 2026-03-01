@@ -3,7 +3,7 @@ import Swal from 'sweetalert2';
 import api from "../../services/api";
 import { useNavigate } from 'react-router-dom';
 import { 
-  Search, Plus, Edit2, Trash2, X, Save, Loader2 
+  Search, Plus, Edit2, Trash2, X, Save, Loader2, FileText, Upload 
 } from 'lucide-react';
 import './adminstyles/Skema.css'; 
 
@@ -19,13 +19,16 @@ const Skema = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentId, setCurrentId] = useState(null);
 
-  // State Form
+  // --- STATE KHUSUS FILE ---
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  // State Form (Default)
   const initialFormState = {
     kode_skema: '',
     judul_skema: '',
     judul_skema_en: '',
     jenis_skema: 'kkni',
-    level_kkni: '', // Nanti akan diisi angka 1-9
+    level_kkni: '', 
     bidang_okupasi: '',
     kode_sektor: '',
     kode_kbli: '',
@@ -33,7 +36,7 @@ const Skema = () => {
     keterangan_bukti: '',
     skor_min_ai05: '',
     kedalaman_bukti: 'elemen_kompetensi',
-    dokumen: '',
+    dokumen: '', // Hanya untuk menyimpan nama file lama saat edit
     status: 'draft'
   };
   const [formData, setFormData] = useState(initialFormState);
@@ -58,14 +61,26 @@ const Skema = () => {
   }, []);
 
   // --- HANDLERS ---
+  
+  // 1. Handler untuk Input Teks Biasa
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // 2. Handler KHUSUS untuk Input File
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file); // Simpan file objek ke state
+    }
+  };
+
   const handleEdit = (item) => {
     setIsEditMode(true);
     setCurrentId(item.id_skema);
+    setSelectedFile(null); // Reset file saat edit dibuka
+    
     setFormData({
       kode_skema: item.kode_skema || '',
       judul_skema: item.judul_skema || '',
@@ -79,7 +94,7 @@ const Skema = () => {
       keterangan_bukti: item.keterangan_bukti || '',
       skor_min_ai05: item.skor_min_ai05 || '',
       kedalaman_bukti: item.kedalaman_bukti || 'elemen_kompetensi',
-      dokumen: item.dokumen || '',
+      dokumen: item.dokumen || '', // Nama file lama
       status: item.status || 'draft'
     });
     setShowModal(true);
@@ -107,27 +122,51 @@ const Skema = () => {
     }
   };
 
+  // --- 3. HANDLE SUBMIT (PENTING: Pakai FormData) ---
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Gunakan FormData agar bisa kirim File + Teks ke Backend
+    const dataToSend = new FormData();
+
+    // Masukkan data teks
+    Object.keys(formData).forEach(key => {
+      // Jangan kirim null atau 'dokumen' string (karena dokumen dikirim sbg file)
+      if (key !== 'dokumen' && formData[key] !== null && formData[key] !== undefined) {
+        dataToSend.append(key, formData[key]);
+      }
+    });
+
+    // Masukkan File jika ada file baru dipilih
+    if (selectedFile) {
+      dataToSend.append('dokumen', selectedFile);
+    }
+
+    // Config Header agar backend tahu ini file upload
+    const config = {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    };
+
     try {
       if (isEditMode) {
-        await api.put(`/admin/skema/${currentId}`, formData);
+        await api.put(`/admin/skema/${currentId}`, dataToSend, config);
         Swal.fire('Berhasil', 'Data skema diperbarui', 'success');
       } else {
-        await api.post('/admin/skema', formData);
+        await api.post('/admin/skema', dataToSend, config);
         Swal.fire('Berhasil', 'Skema baru ditambahkan', 'success');
       }
       setShowModal(false);
       fetchData();
     } catch (error) {
-      Swal.fire('Gagal', error.response?.data?.message || 'Terjadi kesalahan', 'error');
+      console.error("Submit Error:", error);
+      Swal.fire('Gagal', error.response?.data?.message || 'Terjadi kesalahan saat menyimpan', 'error');
     }
   };
 
   // --- FILTER ---
   const filteredData = data.filter(item => 
-    item.judul_skema.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.kode_skema.toLowerCase().includes(searchTerm.toLowerCase())
+    (item.judul_skema && item.judul_skema.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (item.kode_skema && item.kode_skema.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
@@ -143,6 +182,7 @@ const Skema = () => {
             className="btn-create bg-blue-600 text-white hover:bg-blue-700"
             onClick={() => {
               setFormData(initialFormState);
+              setSelectedFile(null);
               setIsEditMode(false);
               setShowModal(true);
             }}
@@ -193,6 +233,20 @@ const Skema = () => {
                       <div className="text-xs text-slate-500 mt-1">
                         {item.jenis_skema.toUpperCase()} {item.level_kkni ? `| Level ${item.level_kkni}` : ''}
                       </div>
+                      
+                      {/* Link Dokumen Jika Ada */}
+                      {item.dokumen && (
+                        <div className="mt-1">
+                           <a 
+                             href={`${import.meta.env.VITE_API_URL}${item.dokumen}`} 
+                             target="_blank" 
+                             rel="noreferrer" 
+                             className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+                           >
+                             <FileText size={10} /> Lihat Dokumen
+                           </a>
+                        </div>
+                      )}
                     </td>
                     <td className="px-6 py-4 text-center">
                       <span className={`px-2 py-1 rounded text-xs font-bold border capitalize
@@ -204,7 +258,7 @@ const Skema = () => {
                       </span>
                     </td>
                     
-                    {/* --- TOMBOL AKSI TANPA ICON --- */}
+                    {/* TOMBOL KELOLA (Tanpa Icon) */}
                     <td className="px-6 py-4 text-center">
                       <div className="flex flex-col gap-2 justify-center">
                         <button 
@@ -287,27 +341,14 @@ const Skema = () => {
                     </select>
                   </div>
                   
-                  {/* --- PERUBAHAN: LEVEL KKNI JADI DROPDOWN 1-9 --- */}
+                  {/* Dropdown Level 1-9 */}
                   <div className="form-group">
                     <label>Level KKNI</label>
-                    <select 
-                      name="level_kkni" 
-                      value={formData.level_kkni} 
-                      onChange={handleInputChange}
-                    >
+                    <select name="level_kkni" value={formData.level_kkni} onChange={handleInputChange}>
                       <option value="">-- Pilih Level --</option>
-                      <option value="1">1</option>
-                      <option value="2">2</option>
-                      <option value="3">3</option>
-                      <option value="4">4</option>
-                      <option value="5">5</option>
-                      <option value="6">6</option>
-                      <option value="7">7</option>
-                      <option value="8">8</option>
-                      <option value="9">9</option>
+                      {[1,2,3,4,5,6,7,8,9].map(num => <option key={num} value={num}>{num}</option>)}
                     </select>
                   </div>
-                  {/* ----------------------------------------------- */}
                 </div>
 
                 <div className="form-group">
@@ -349,10 +390,37 @@ const Skema = () => {
                   <textarea name="keterangan_bukti" rows="3" value={formData.keterangan_bukti} onChange={handleInputChange} className="w-full p-2 border rounded-lg"></textarea>
                 </div>
                 
-                <div className="form-group">
-                  <label>Link Dokumen (G-Drive / URL)</label>
-                  <input type="text" name="dokumen" value={formData.dokumen} onChange={handleInputChange} placeholder="https://..." />
+                {/* --- PERUBAHAN UTAMA: INPUT FILE --- */}
+                <div className="form-group bg-blue-50 p-4 rounded-lg border border-blue-100">
+                  <label className="text-blue-800 font-semibold mb-2 flex items-center gap-2">
+                    <Upload size={16}/> Unggah Dokumen Skema (PDF/DOC)
+                  </label>
+                  
+                  {/* Hanya Input ini yang handleFileChange */}
+                  <input 
+                    type="file" 
+                    name="dokumen" 
+                    onChange={handleFileChange} 
+                    accept=".pdf,.doc,.docx"
+                    className="block w-full text-sm text-slate-500
+                      file:mr-4 file:py-2 file:px-4
+                      file:rounded-full file:border-0
+                      file:text-sm file:font-semibold
+                      file:bg-blue-50 file:text-blue-700
+                      hover:file:bg-blue-100
+                    "
+                  />
+                  
+                  {/* Pesan jika file sudah ada (saat edit) */}
+                  {isEditMode && formData.dokumen && !selectedFile && (
+                    <div className="flex items-center gap-2 mt-2 text-xs text-green-600 bg-white p-2 rounded border border-green-100 w-fit">
+                      <FileText size={14} />
+                      <span>File Tersimpan: {formData.dokumen.split('/').pop()}</span>
+                    </div>
+                  )}
                 </div>
+                {/* ------------------------------------- */}
+
               </form>
             </div>
 

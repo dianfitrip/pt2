@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
 /* ================= PUBLIC PAGES ================= */
 import Home from "./pages/public/Home";
@@ -27,6 +27,10 @@ import UnitKompetensi from "./pages/admin/UnitKompetensi";
 import VerifikasiPendaftaran from "./pages/admin/VerifikasiPendaftaran";
 import Asesor from "./pages/admin/Asesor";
 import Banding from "./pages/admin/Banding";
+
+// --- HALAMAN BARU: PERSYARATAN SKEMA ---
+import SkemaPersyaratan from "./pages/admin/SkemaPersyaratan";
+import SkemaPersyaratanTuk from "./pages/admin/SkemaPersyaratanTuk";
 
 /* ================= ROLE GUARD ================= */
 const getUser = () => {
@@ -57,10 +61,6 @@ export default function App() {
         <Route path="/surveillance" element={<Surveillance />} />
 
         {/* ================= ADMIN ROUTES (NESTED) ================= */}
-        {/* Perubahan Utama: 
-            Semua route admin dibungkus dalam satu Route Parent.
-            AdminDashboard menjadi Layout utama.
-        */}
         <Route 
           path="/admin" 
           element={
@@ -69,50 +69,46 @@ export default function App() {
             </ProtectedRoute>
           }
         >
-          {/* Index akan otomatis mengarah ke dashboard overview yang ada di AdminDashboard.jsx */}
+          {/* Index akan otomatis mengarah ke dashboard overview */}
           <Route path="dashboard" element={null} /> 
 
-          {/* MENYAMAKAN PATH DENGAN SIDEBAR.JSX */}
-          
-          {/* Menu: Standar Kompetensi */}
+          {/* MENU: STANDAR KOMPETENSI */}
           <Route path="unit-kompetensi" element={<UnitKompetensi />} />
           <Route path="skkni" element={<Skkni />} />
           <Route path="skema" element={<Skema />} />
+          
+          {/* --- ROUTE BARU UNTUK KELOLA PERSYARATAN SKEMA --- */}
+          <Route path="skema/:id/persyaratan" element={<SkemaPersyaratan />} />
+          <Route path="skema/:id/persyaratan-tuk" element={<SkemaPersyaratanTuk />} />
 
-          {/* Menu: Dokumen Mutu */}
+          {/* MENU: DOKUMEN MUTU */}
           <Route path="dokumen-mutu" element={<DokumenMutu />} />
 
-          {/* Menu: Event & Jadwal */}
-          {/* Sidebar mengarah ke /admin/jadwal/uji-kompetensi */}
+          {/* MENU: EVENT & JADWAL */}
           <Route path="jadwal/uji-kompetensi" element={<JadwalUji />} /> 
           
-          {/* Menu: Tempat Uji */}
+          {/* MENU: TEMPAT UJI */}
           <Route path="tuk" element={<TempatUji />} />
 
-          {/* Menu: Data Asesi */}
-          {/* Sidebar mengarah ke /admin/verifikasi-pendaftaran */}
+          {/* MENU: DATA ASESI */}
           <Route path="verifikasi-pendaftaran" element={<VerifikasiPendaftaran />} />
-          
-          {/* Sidebar mengarah ke submenu IA01 & IA03 */}
           <Route path="asesi/ia01-observasi" element={<IA01Observasi />} />
           <Route path="asesi/ia03-pertanyaan" element={<IA03Pertanyaan />} />
 
-          {/* Menu: Data Asesor */}
+          {/* MENU: DATA ASESOR */}
           <Route path="asesor" element={<Asesor />} />
 
-          {/* Menu: Sistem & Web */}
+          {/* MENU: SISTEM & WEB */}
           <Route path="notifikasi" element={<Notifikasi />} />
 
-          {/* Menu: Layanan */}
+          {/* MENU: LAYANAN */}
           <Route path="pengaduan" element={<Pengaduan />} />
-          <Route path="profil-lsp" element={<ProfileAdmin />} /> {/* Sidebar arahnya ke /admin/profil-lsp */}
+          <Route path="profil-lsp" element={<ProfileAdmin />} />
+          <Route path="banding" element={<Banding />} />
           
-          {/* Route Tambahan untuk path yang mungkin belum dibuat file-nya tapi ada di sidebar 
-              (Agar tidak blank page, Anda bisa buat komponen Placeholder sementara)
-          */}
-           <Route path="banding" element={<Banding />} />
-           <Route path="laporan/*" element={<div>Halaman Laporan (Belum dibuat)</div>} />
-           <Route path="keuangan" element={<div>Halaman Keuangan (Belum dibuat)</div>} />
+          {/* Placeholder untuk menu yang belum jadi */}
+          <Route path="laporan/*" element={<div>Halaman Laporan (Belum dibuat)</div>} />
+          <Route path="keuangan" element={<div>Halaman Keuangan (Belum dibuat)</div>} />
            
         </Route>
 

@@ -26,7 +26,6 @@ const VerifikasiPendaftaran = () => {
     try {
       const response = await api.get('/admin/pendaftaran');
       const resultData = response.data.data || []; 
-      
       setData(resultData);
       setFilteredData(resultData);
     } catch (error) {
@@ -61,10 +60,16 @@ const VerifikasiPendaftaran = () => {
   // --- 3. ACTIONS ---
   
   // Handle Verifikasi (Approve)
-  const handleApprove = async (id_pendaftaran) => {
+  const handleApprove = async (item) => {
+    // Konfirmasi Awal
     const result = await Swal.fire({
       title: 'Verifikasi Pendaftaran?',
-      text: "Sistem akan membuatkan akun user & profil asesi otomatis.",
+      html: `
+        <p>Sistem akan membuat akun ASESI untuk:</p>
+        <p><strong>${item.nama_lengkap}</strong></p>
+        <br/>
+        <p class="text-sm text-gray-500">Notifikasi berisi Password akan dikirim otomatis ke email pendaftar.</p>
+      `,
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#10B981',
@@ -76,15 +81,42 @@ const VerifikasiPendaftaran = () => {
     if (result.isConfirmed) {
       setActionLoading(true);
       try {
-        // PERBAIKAN: Gunakan POST, bukan PUT
-        await api.post(`/admin/pendaftaran/${id_pendaftaran}/approve`);
+        // REQUEST KE BACKEND
+        // Menggunakan POST sesuai route backend kamu
+        await api.post(`/admin/pendaftaran/${item.id_pendaftaran}/approve`);
         
-        Swal.fire('Berhasil!', 'Pendaftaran diverifikasi. Email notifikasi telah dikirim.', 'success');
+        // SUKSES - Tampilkan Username Saja (Username = NIK)
+        await Swal.fire({
+          icon: 'success',
+          title: 'Akun Berhasil Dibuat!',
+          html: `
+            <div class="text-left">
+              <p class="mb-2">Akun asesi telah aktif.</p>
+              <p><strong>Username:</strong> ${item.nik}</p>
+              <p class="text-sm text-gray-500 mt-2">
+                *Password telah dikirim ke email: ${item.email}
+              </p>
+            </div>
+          `,
+          confirmButtonText: 'Oke, Mengerti'
+        });
+
         setShowModal(false);
-        fetchData(); 
+        fetchData(); // Refresh tabel
       } catch (error) {
         console.error("Approve error:", error);
-        Swal.fire('Gagal!', error.response?.data?.message || 'Gagal memverifikasi pendaftaran.', 'error');
+        
+        // Handle Error Spesifik
+        let errorMessage = 'Gagal memverifikasi pendaftaran.';
+        
+        if (error.response?.status === 500) {
+          // Jika error 500 (kemungkinan masalah email di backend), kita tetap beri info user
+          errorMessage = 'Terjadi kesalahan pada server (kemungkinan konfigurasi email). Namun, cek apakah status user sudah berubah.';
+        } else if (error.response?.data?.message) {
+          errorMessage = error.response.data.message;
+        }
+
+        Swal.fire('Gagal!', errorMessage, 'error');
       } finally {
         setActionLoading(false);
       }
@@ -107,7 +139,6 @@ const VerifikasiPendaftaran = () => {
     if (result.isConfirmed) {
       setActionLoading(true);
       try {
-        // PERBAIKAN: Gunakan POST, bukan PUT
         await api.post(`/admin/pendaftaran/${id_pendaftaran}/reject`);
         
         Swal.fire('Ditolak!', 'Pendaftaran telah ditolak.', 'success');
@@ -122,7 +153,7 @@ const VerifikasiPendaftaran = () => {
     }
   };
 
-  // --- 4. MODAL & UI HELPERS ---
+  // --- 4. UI HELPERS ---
   const openDetailModal = (item) => {
     setSelectedItem(item);
     setShowModal(true);
@@ -315,7 +346,7 @@ const VerifikasiPendaftaran = () => {
                   </button>
                   <button 
                     className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700 shadow-sm hover:shadow-md transition-all font-medium flex items-center gap-2"
-                    onClick={() => handleApprove(selectedItem.id_pendaftaran)}
+                    onClick={() => handleApprove(selectedItem)}
                     disabled={actionLoading}
                   >
                     {actionLoading ? <Loader2 size={16} className="animate-spin"/> : <CheckCircle size={16}/>}

@@ -6,7 +6,7 @@ import {
   FaLayerGroup, FaMoneyBillWave, FaCalendarAlt, FaBuilding, FaUserGraduate, 
   FaUserTie, FaUsersCog, FaCommentDots, FaGlobe, FaCogs, FaCalculator, 
   FaCreditCard, FaEnvelopeOpenText, FaEye, FaLock, FaSignOutAlt, 
-  FaChevronDown, FaChevronRight, FaListUl
+  FaChevronDown, FaChevronRight
 } from "react-icons/fa";
 
 const Sidebar = () => {
@@ -20,13 +20,12 @@ const Sidebar = () => {
     standar: false,
     biaya: false,
     event: false,
-    tuk: false,
+    tuk: false, // <-- Menambahkan state dropdown untuk TUK
     asesi: false,
     asesor: false,
     manajemen: false,
     pembayaran: false,
-    persuratan: false,
-    persyaratan: false // <-- TAMBAHAN: State dropdown Persyaratan
+    persuratan: false
   });
 
   // 1. AUTO-OPEN MENU INDUK JIKA ANAKNYA SEDANG AKTIF
@@ -38,13 +37,12 @@ const Sidebar = () => {
       standar: prev.standar || path.includes('/admin/unit-kompetensi') || path.includes('/admin/skkni'),
       biaya: prev.biaya || path.includes('/admin/biaya'),
       event: prev.event || path.includes('/admin/jadwal'),
-      tuk: prev.tuk || path.includes('/admin/tuk'), 
+      tuk: prev.tuk || path.includes('/admin/tuk'), // <-- Auto-open untuk dropdown TUK
       asesi: prev.asesi || path.includes('/admin/asesi') || path.includes('/admin/verifikasi-pendaftaran'),
       asesor: prev.asesor || path.includes('/admin/asesor'),
       manajemen: prev.manajemen || path.includes('/admin/manajemen'),
       pembayaran: prev.pembayaran || path.includes('/admin/pembayaran'),
-      persuratan: prev.persuratan || path.includes('/admin/surat'),
-      persyaratan: prev.persyaratan || path.includes('/admin/persyaratan') // <-- Logic Auto Open
+      persuratan: prev.persuratan || path.includes('/admin/surat')
     }));
   }, [location.pathname]);
 
@@ -197,26 +195,10 @@ const Sidebar = () => {
 
         {/* MASTER DATA */}
         <div className="nav-section-label">Master Data</div>
-        
-        {/* --- MENU BARU: PERSYARATAN --- */}
-        <button className={`nav-item has-submenu ${openMenus.persyaratan ? 'open' : ''} ${isActive('/admin/persyaratan') ? 'active' : ''}`} onClick={() => toggleMenu('persyaratan')}>
-          <div className="nav-icon"><FaListUl /></div>
-          <span className="nav-label">Persyaratan</span>
-          <span className="arrow-icon">{openMenus.persyaratan ? <FaChevronDown /> : <FaChevronRight />}</span>
+        <button className={`nav-item ${isActive('/admin/profil-lsp') ? 'active' : ''}`} onClick={() => handleNav('/admin/profil-lsp')}>
+          <div className="nav-icon"><FaUniversity /></div>
+          <span className="nav-label">Profil LSP</span>
         </button>
-        {openMenus.persyaratan && (
-          <div className="submenu">
-            <button className={`submenu-item ${isActive('/admin/persyaratan') && !isActive('/admin/persyaratan-tuk') ? 'active' : ''}`} onClick={() => handleNav('/admin/persyaratan')}>
-              <span className="dot"></span> Persyaratan Dasar
-            </button>
-            <button className={`submenu-item ${isActive('/admin/persyaratan-tuk') ? 'active' : ''}`} onClick={() => handleNav('/admin/persyaratan-tuk')}>
-              <span className="dot"></span> Persyaratan TUK
-            </button>
-          </div>
-        )}
-        {/* ----------------------------- */}
-
-        {/* PROFIL LSP DIHAPUS DISINI */}
 
         <button className={`nav-item ${isActive('/admin/dokumen-mutu') ? 'active' : ''}`} onClick={() => handleNav('/admin/dokumen-mutu')}>
           <div className="nav-icon"><FaBook /></div>

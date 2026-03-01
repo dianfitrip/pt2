@@ -28,7 +28,11 @@ import VerifikasiPendaftaran from "./pages/admin/VerifikasiPendaftaran";
 import Asesor from "./pages/admin/Asesor";
 import Banding from "./pages/admin/Banding";
 
-// --- HALAMAN BARU: PERSYARATAN SKEMA ---
+/* --- HALAMAN BARU: MASTER DATA PERSYARATAN (Menu Sidebar) --- */
+import Persyaratan from "./pages/admin/PersyaratanNOTDONE";
+import PersyaratanTuk from "./pages/admin/PersyaratanTukNOTDONE";
+
+/* --- HALAMAN BARU: KELOLA SKEMA (Tombol Aksi di Tabel Skema) --- */
 import SkemaPersyaratan from "./pages/admin/SkemaPersyaratan";
 import SkemaPersyaratanTuk from "./pages/admin/SkemaPersyaratanTuk";
 
@@ -72,12 +76,19 @@ export default function App() {
           {/* Index akan otomatis mengarah ke dashboard overview */}
           <Route path="dashboard" element={null} /> 
 
-          {/* MENU: STANDAR KOMPETENSI */}
+          {/* MENU: MASTER DATA */}
+          
+          {/* 1. Persyaratan (Menu Baru) */}
+          <Route path="persyaratan" element={<Persyaratan />} />
+          <Route path="persyaratan-tuk" element={<PersyaratanTuk />} />
+
+          {/* 2. Standar Kompetensi */}
           <Route path="unit-kompetensi" element={<UnitKompetensi />} />
           <Route path="skkni" element={<Skkni />} />
-          <Route path="skema" element={<Skema />} />
           
-          {/* --- ROUTE BARU UNTUK KELOLA PERSYARATAN SKEMA --- */}
+          {/* 3. Skema Sertifikasi */}
+          <Route path="skema" element={<Skema />} />
+          {/* Sub-menu untuk kelola skema (Aksi dari tombol di tabel skema) */}
           <Route path="skema/:id/persyaratan" element={<SkemaPersyaratan />} />
           <Route path="skema/:id/persyaratan-tuk" element={<SkemaPersyaratanTuk />} />
 

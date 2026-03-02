@@ -28,9 +28,6 @@ import VerifikasiPendaftaran from "./pages/admin/VerifikasiPendaftaran";
 import Asesor from "./pages/admin/Asesor";
 import Banding from "./pages/admin/Banding";
 
-/* --- HALAMAN BARU: MASTER DATA PERSYARATAN (Menu Sidebar) --- */
-import Persyaratan from "./pages/admin/PersyaratanNOTDONE";
-import PersyaratanTuk from "./pages/admin/PersyaratanTukNOTDONE";
 
 /* --- HALAMAN BARU: KELOLA SKEMA (Tombol Aksi di Tabel Skema) --- */
 import SkemaPersyaratan from "./pages/admin/SkemaPersyaratan";
@@ -78,9 +75,7 @@ export default function App() {
 
           {/* MENU: MASTER DATA */}
           
-          {/* 1. Persyaratan (Menu Baru) */}
-          <Route path="persyaratan" element={<Persyaratan />} />
-          <Route path="persyaratan-tuk" element={<PersyaratanTuk />} />
+        
 
           {/* 2. Standar Kompetensi */}
           <Route path="unit-kompetensi" element={<UnitKompetensi />} />

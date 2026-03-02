@@ -18,11 +18,11 @@ const JadwalUji = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [currentId, setCurrentId] = useState(null);
 
-  // Data Pendukung untuk Dropdown
+  // Data Pendukung Dropdown
   const [listSkema, setListSkema] = useState([]);
   const [listTuk, setListTuk] = useState([]);
 
-  // State Form Sesuai Model Database
+  // State Form
   const initialFormState = {
     kode_jadwal: '',
     id_skema: '',
@@ -35,14 +35,14 @@ const JadwalUji = () => {
     tgl_awal: '',
     tgl_akhir: '',
     jam: '',
-    kuota: '', // Gunakan string kosong utk input, nanti di-convert saat submit
+    kuota: 0,
     pelaksanaan_uji: 'luring', 
     url_agenda: '',
-    status: 'draft' 
+    status: 'draft'
   };
   const [formData, setFormData] = useState(initialFormState);
 
-  // Constants untuk Dropdown Bulan
+  // Daftar Bulan Statis
   const listBulan = [
     "Januari", "Februari", "Maret", "April", "Mei", "Juni",
     "Juli", "Agustus", "September", "Oktober", "November", "Desember"
@@ -52,22 +52,18 @@ const JadwalUji = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      // 1. Ambil Data Jadwal
       const response = await api.get('/admin/jadwal');
-      const resultData = response.data.data || [];
-      setData(resultData);
+      setData(response.data.data || []);
 
-      // 2. Ambil Data Skema (Untuk Dropdown)
       const skemaRes = await api.get('/admin/skema');
       setListSkema(skemaRes.data.data || []);
 
-      // 3. Ambil Data TUK (Untuk Dropdown)
       const tukRes = await api.get('/admin/tuk');
       setListTuk(tukRes.data.data || []);
 
     } catch (error) {
       console.error("Error fetching data:", error);
-      Swal.fire('Error', 'Gagal memuat data jadwal', 'error');
+      Swal.fire('Error', 'Gagal memuat data', 'error');
     } finally {
       setLoading(false);
     }
@@ -109,78 +105,74 @@ const JadwalUji = () => {
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: 'Hapus Jadwal?',
-      text: "Data yang dihapus tidak dapat dikembalikan!",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#EF4444',
-      cancelButtonColor: '#6B7280',
+      confirmButtonColor: '#d33',
       confirmButtonText: 'Ya, Hapus'
     });
 
     if (result.isConfirmed) {
       try {
         await api.delete(`/admin/jadwal/${id}`);
-        Swal.fire('Terhapus!', 'Jadwal telah dihapus.', 'success');
+        Swal.fire('Terhapus!', 'Data dihapus.', 'success');
         fetchData();
       } catch (error) {
-        Swal.fire('Gagal!', error.response?.data?.message || 'Gagal menghapus data', 'error');
+        Swal.fire('Gagal!', error.response?.data?.message || 'Gagal hapus data', 'error');
       }
     }
   };
 
-  // --- FUNGSI PENTING: BERSIHKAN DATA SEBELUM KIRIM ---
-  // Mengubah string kosong "" menjadi null agar backend tidak error (Error 500)
-  const sanitizeFormData = (data) => {
-    const cleanData = { ...data };
+  // --- FUNGSI BERSIH-BERSIH DATA (Fix Error 400) ---
+  const sanitizeData = (data) => {
+    const clean = { ...data };
     
-    // Pastikan ID Skema & TUK jadi integer
-    if (cleanData.id_skema) cleanData.id_skema = parseInt(cleanData.id_skema);
-    if (cleanData.id_tuk) cleanData.id_tuk = parseInt(cleanData.id_tuk);
-    
-    // Angka lain
-    if (cleanData.kuota === "") cleanData.kuota = 0;
-    else cleanData.kuota = parseInt(cleanData.kuota);
+    // Pastikan field Relasi berupa Integer
+    clean.id_skema = clean.id_skema ? parseInt(clean.id_skema) : null;
+    clean.id_tuk = clean.id_tuk ? parseInt(clean.id_tuk) : null;
+    clean.tahun = clean.tahun ? parseInt(clean.tahun) : null;
+    clean.kuota = clean.kuota ? parseInt(clean.kuota) : 0;
 
-    if (cleanData.tahun) cleanData.tahun = parseInt(cleanData.tahun);
-
-    // Date/Time fields: kirim null jika kosong string
+    // Ubah string kosong "" menjadi null agar DB tidak error
     ['tgl_pra_asesmen', 'tgl_awal', 'tgl_akhir', 'jam', 'kode_jadwal', 'url_agenda', 'periode_bulan', 'gelombang'].forEach(field => {
-      if (cleanData[field] === "") {
-        cleanData[field] = null;
+      if (!clean[field] || clean[field] === "") {
+        clean[field] = null;
       }
     });
 
-    return cleanData;
+    return clean;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validasi Field Wajib
+    // Validasi di Frontend
     if (!formData.id_skema || !formData.id_tuk || !formData.nama_kegiatan) {
-      Swal.fire('Peringatan', 'Skema, TUK, dan Nama Kegiatan wajib diisi!', 'warning');
+      Swal.fire('Gagal', 'Nama Kegiatan, Skema, dan TUK wajib diisi!', 'warning');
       return;
     }
 
-    const dataToSend = sanitizeFormData(formData);
+    const dataToSend = sanitizeData(formData);
+
+    // DEBUG: Cek di Console Browser (F12) jika masih error
+    console.log("DATA DIKIRIM:", dataToSend); 
 
     try {
       if (isEditMode) {
         await api.put(`/admin/jadwal/${currentId}`, dataToSend);
-        Swal.fire('Berhasil', 'Jadwal berhasil diperbarui', 'success');
+        Swal.fire('Sukses', 'Jadwal diperbarui', 'success');
       } else {
         await api.post('/admin/jadwal', dataToSend);
-        Swal.fire('Berhasil', 'Jadwal baru berhasil dibuat', 'success');
+        Swal.fire('Sukses', 'Jadwal dibuat', 'success');
       }
       setShowModal(false);
       fetchData();
     } catch (error) {
       console.error("Submit Error:", error);
-      Swal.fire('Gagal', error.response?.data?.message || 'Terjadi kesalahan server (500)', 'error');
+      Swal.fire('Gagal', error.response?.data?.message || 'Terjadi kesalahan (Cek Console)', 'error');
     }
   };
 
-  // --- FILTER ---
+  // Filter
   const filteredData = data.filter(item => 
     (item.nama_kegiatan && item.nama_kegiatan.toLowerCase().includes(searchTerm.toLowerCase())) ||
     (item.kode_jadwal && item.kode_jadwal.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -188,7 +180,6 @@ const JadwalUji = () => {
 
   return (
     <div className="jadwal-container">
-      {/* Header */}
       <div className="header-section">
         <div>
           <h1 className="page-title">Jadwal Uji Kompetensi</h1>
@@ -206,13 +197,13 @@ const JadwalUji = () => {
         </button>
       </div>
 
-      {/* Search Bar */}
+      {/* Search */}
       <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6 flex items-center gap-3">
         <Search className="text-slate-400" size={20} />
         <input 
           type="text" 
-          placeholder="Cari nama kegiatan atau kode jadwal..." 
-          className="bg-transparent border-none focus:outline-none w-full text-slate-700 placeholder-slate-400"
+          placeholder="Cari kode atau nama kegiatan..." 
+          className="bg-transparent w-full outline-none text-slate-700"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -227,7 +218,7 @@ const JadwalUji = () => {
                 <th className="px-6 py-4 w-12 text-center">No</th>
                 <th className="px-6 py-4">Kegiatan</th>
                 <th className="px-6 py-4">Skema & TUK</th>
-                <th className="px-6 py-4">Waktu & Mode</th>
+                <th className="px-6 py-4">Waktu</th>
                 <th className="px-6 py-4 text-center">Kuota</th>
                 <th className="px-6 py-4 text-center">Status</th>
                 <th className="px-6 py-4 text-center">Aksi</th>
@@ -237,7 +228,7 @@ const JadwalUji = () => {
               {loading ? (
                 <tr><td colSpan="7" className="text-center py-8"><Loader2 className="animate-spin mx-auto"/></td></tr>
               ) : filteredData.length === 0 ? (
-                <tr><td colSpan="7" className="text-center py-8 text-slate-500">Belum ada data jadwal</td></tr>
+                <tr><td colSpan="7" className="text-center py-8 text-slate-500">Data kosong</td></tr>
               ) : (
                 filteredData.map((item, index) => (
                   <tr key={item.id_jadwal} className="hover:bg-slate-50">
@@ -245,7 +236,7 @@ const JadwalUji = () => {
                     <td className="px-6 py-4">
                       <div className="text-xs font-mono font-bold text-blue-600 mb-1">{item.kode_jadwal || '-'}</div>
                       <div className="font-medium text-slate-800">{item.nama_kegiatan}</div>
-                      <div className="text-xs text-slate-500">Gelombang: {item.gelombang || '-'} ({item.tahun})</div>
+                      <div className="text-xs text-slate-500 mt-1">Gel: {item.gelombang || '-'} ({item.tahun})</div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col gap-1">
@@ -265,20 +256,14 @@ const JadwalUji = () => {
                     </td>
                     <td className="px-6 py-4">
                       <div className="text-xs text-slate-600 flex items-center gap-1 mb-1">
-                        <Calendar size={12}/> {item.tgl_awal} s/d {item.tgl_akhir}
+                        <Calendar size={12}/> {item.tgl_awal || '?'} s.d {item.tgl_akhir || '?'}
                       </div>
-                      <div className="flex gap-2">
-                         <span className="text-xs font-medium bg-gray-100 px-2 py-0.5 rounded border uppercase">
-                            {item.pelaksanaan_uji}
-                         </span>
-                         <span className="text-xs flex items-center gap-1 text-slate-500">
-                            <Clock size={10}/> {item.jam}
-                         </span>
+                      <div className="flex gap-2 items-center">
+                        <span className="text-xs font-medium bg-gray-100 px-2 py-0.5 rounded border uppercase">{item.pelaksanaan_uji}</span>
+                        <span className="text-xs text-slate-500"><Clock size={10} className="inline"/> {item.jam || '-'}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-center font-semibold text-slate-700">
-                      {item.kuota}
-                    </td>
+                    <td className="px-6 py-4 text-center font-semibold">{item.kuota}</td>
                     <td className="px-6 py-4 text-center">
                       <span className={`px-2 py-1 rounded text-xs font-bold border capitalize
                         ${item.status === 'open' ? 'bg-green-50 text-green-600 border-green-200' : 
@@ -291,12 +276,8 @@ const JadwalUji = () => {
                     </td>
                     <td className="px-6 py-4 text-center">
                       <div className="flex justify-center gap-2">
-                        <button onClick={() => handleEdit(item)} className="text-amber-500 hover:text-amber-600 p-1" title="Edit">
-                          <Edit2 size={18} />
-                        </button>
-                        <button onClick={() => handleDelete(item.id_jadwal)} className="text-red-500 hover:text-red-600 p-1" title="Hapus">
-                          <Trash2 size={18} />
-                        </button>
+                        <button onClick={() => handleEdit(item)} className="text-amber-500 hover:text-amber-600 p-1"><Edit2 size={18} /></button>
+                        <button onClick={() => handleDelete(item.id_jadwal)} className="text-red-500 hover:text-red-600 p-1"><Trash2 size={18} /></button>
                       </div>
                     </td>
                   </tr>
@@ -307,26 +288,23 @@ const JadwalUji = () => {
         </div>
       </div>
 
-      {/* MODAL FORM */}
+      {/* MODAL */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
           <div className="bg-white rounded-xl w-full max-w-3xl shadow-2xl overflow-hidden animate-slide-up flex flex-col max-h-[90vh]">
-            
-            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white flex-shrink-0">
-              <h3 className="text-lg font-bold text-slate-800">
-                {isEditMode ? 'Edit Jadwal' : 'Buat Jadwal Baru'}
-              </h3>
-              <button onClick={() => setShowModal(false)} className="text-slate-400 hover:text-slate-600"><X size={24} /></button>
+            <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
+              <h3 className="text-lg font-bold text-slate-800">{isEditMode ? 'Edit Jadwal' : 'Buat Jadwal Baru'}</h3>
+              <button onClick={() => setShowModal(false)}><X size={24} className="text-slate-400 hover:text-slate-600"/></button>
             </div>
             
             <div className="p-6 overflow-y-auto flex-1">
               <form id="jadwalForm" onSubmit={handleSubmit} className="space-y-4">
                 
-                {/* 1. INFORMASI UMUM */}
+                {/* INFO UMUM */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="form-group">
                     <label>Kode Jadwal</label>
-                    <input type="text" name="kode_jadwal" value={formData.kode_jadwal} onChange={handleInputChange} placeholder="Opsional (Auto)" className="form-input"/>
+                    <input type="text" name="kode_jadwal" value={formData.kode_jadwal} onChange={handleInputChange} placeholder="Auto/Manual" className="form-input"/>
                   </div>
                   <div className="form-group">
                     <label>Nama Kegiatan <span className="text-red-500">*</span></label>
@@ -334,22 +312,21 @@ const JadwalUji = () => {
                   </div>
                 </div>
 
-                {/* 2. SKEMA & TUK (RELASI) */}
+                {/* SKEMA & TUK */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-3 rounded-lg border border-slate-100">
                   <div className="form-group">
                     <label className="flex items-center gap-1"><Layers size={14}/> Pilih Skema <span className="text-red-500">*</span></label>
-                    {/* Tambahkan style cursor-pointer agar terasa seperti dropdown */}
                     <select name="id_skema" value={formData.id_skema} onChange={handleInputChange} className="form-select cursor-pointer" required>
-                      <option value="">-- Pilih Skema Sertifikasi --</option>
+                      <option value="">-- Pilih Skema --</option>
                       {listSkema.map(s => (
-                        <option key={s.id_skema} value={s.id_skema}>{s.judul_skema} (Kode: {s.kode_skema})</option>
+                        <option key={s.id_skema} value={s.id_skema}>{s.judul_skema} ({s.kode_skema})</option>
                       ))}
                     </select>
                   </div>
                   <div className="form-group">
                     <label className="flex items-center gap-1"><MapPin size={14}/> Pilih TUK <span className="text-red-500">*</span></label>
                     <select name="id_tuk" value={formData.id_tuk} onChange={handleInputChange} className="form-select cursor-pointer" required>
-                      <option value="">-- Pilih Tempat Uji --</option>
+                      <option value="">-- Pilih TUK --</option>
                       {listTuk.map(t => (
                         <option key={t.id_tuk} value={t.id_tuk}>{t.nama_tuk} ({t.jenis_tuk})</option>
                       ))}
@@ -357,7 +334,7 @@ const JadwalUji = () => {
                   </div>
                 </div>
 
-                {/* 3. WAKTU PELAKSANAAN */}
+                {/* WAKTU */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                    <div className="form-group">
                     <label>Tgl Awal</label>
@@ -377,7 +354,7 @@ const JadwalUji = () => {
                   </div>
                 </div>
 
-                {/* 4. DETAIL PELAKSANAAN */}
+                {/* DETAIL */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="form-group">
                     <label>Tahun</label>
@@ -387,8 +364,7 @@ const JadwalUji = () => {
                     <label>Bulan</label>
                     <select name="periode_bulan" value={formData.periode_bulan} onChange={handleInputChange} className="form-select cursor-pointer">
                         <option value="">-- Pilih --</option>
-                        {/* Menambahkan KEY unik untuk menghilangkan warning React */}
-                        {listBulan.map((b, index) => <option key={`${b}-${index}`} value={b}>{b}</option>)}
+                        {listBulan.map((b) => <option key={b} value={b}>{b}</option>)}
                     </select>
                   </div>
                   <div className="form-group">
@@ -401,10 +377,10 @@ const JadwalUji = () => {
                   </div>
                 </div>
 
-                {/* 5. MODE & STATUS (DROPDOWN ENUM) */}
+                {/* STATUS & MODE */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="form-group">
-                    <label>Pelaksanaan Uji</label>
+                    <label>Mode Uji</label>
                     <select name="pelaksanaan_uji" value={formData.pelaksanaan_uji} onChange={handleInputChange} className="form-select cursor-pointer">
                       <option value="luring">Luring (Offline)</option>
                       <option value="daring">Daring (Online)</option>
@@ -412,18 +388,16 @@ const JadwalUji = () => {
                       <option value="onsite">Onsite</option>
                     </select>
                   </div>
-
                   <div className="form-group">
-                    <label>Status Jadwal</label>
+                    <label>Status</label>
                     <select name="status" value={formData.status} onChange={handleInputChange} className="form-select cursor-pointer">
                       <option value="draft">Draft</option>
-                      <option value="open">Open (Buka Pendaftaran)</option>
-                      <option value="ongoing">Ongoing (Sedang Berjalan)</option>
+                      <option value="open">Open</option>
+                      <option value="ongoing">Ongoing</option>
                       <option value="selesai">Selesai</option>
                       <option value="arsip">Arsip</option>
                     </select>
                   </div>
-
                   <div className="form-group">
                     <label className="flex items-center gap-1"><LinkIcon size={14}/> URL Agenda</label>
                     <input type="text" name="url_agenda" value={formData.url_agenda} onChange={handleInputChange} placeholder="https://..." className="form-input"/>

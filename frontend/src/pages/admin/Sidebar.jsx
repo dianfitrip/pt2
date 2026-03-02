@@ -270,6 +270,9 @@ const Sidebar = () => {
         </button>
         {openMenus.asesi && (
           <div className="submenu">
+            {/* --- MENU TAMBAH ASESI (BARU) --- */}
+            <button className={`submenu-item ${isActive('/admin/asesi/tambah') ? 'active' : ''}`} onClick={() => handleNav('/admin/asesi/tambah')}><span className="dot"></span> Tambah Asesi</button>
+            
             <button className={`submenu-item ${isActive('/admin/asesi/cari') ? 'active' : ''}`} onClick={() => handleNav('/admin/asesi/cari')}><span className="dot"></span> Pencarian Asesi</button>
             <button className={`submenu-item ${isActive('/admin/verifikasi-pendaftaran') ? 'active' : ''}`} onClick={() => handleNav('/admin/verifikasi-pendaftaran')}><span className="dot"></span> Pendaftar Baru</button>
             

@@ -27,7 +27,7 @@ import UnitKompetensi from "./pages/admin/UnitKompetensi";
 import VerifikasiPendaftaran from "./pages/admin/VerifikasiPendaftaran";
 import Asesor from "./pages/admin/Asesor";
 import Banding from "./pages/admin/Banding";
-
+import TambahAsesi from "./pages/admin/TambahAsesi"; // <--- IMPORT HALAMAN BARU
 
 /* --- HALAMAN BARU: KELOLA SKEMA (Tombol Aksi di Tabel Skema) --- */
 import SkemaPersyaratan from "./pages/admin/SkemaPersyaratan";
@@ -75,8 +75,6 @@ export default function App() {
 
           {/* MENU: MASTER DATA */}
           
-        
-
           {/* 2. Standar Kompetensi */}
           <Route path="unit-kompetensi" element={<UnitKompetensi />} />
           <Route path="skkni" element={<Skkni />} />
@@ -98,6 +96,7 @@ export default function App() {
 
           {/* MENU: DATA ASESI */}
           <Route path="verifikasi-pendaftaran" element={<VerifikasiPendaftaran />} />
+          <Route path="asesi/tambah" element={<TambahAsesi />} /> {/* <--- ROUTE BARU */}
           <Route path="asesi/ia01-observasi" element={<IA01Observasi />} />
           <Route path="asesi/ia03-pertanyaan" element={<IA03Pertanyaan />} />
 
